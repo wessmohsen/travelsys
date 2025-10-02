@@ -1,0 +1,125 @@
+/* Sidebar Text White */
+.nav-sidebar .nav-link {
+    color: #ffffff !important;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* Active link style */
+.nav-sidebar .nav-link.active {
+    background-color: #1e88e5 !important;
+    color: #fff !important;
+}
+
+/* أيقونة بجانب النص */
+.nav-sidebar .nav-link i {
+    font-size: 16px;
+}
+
+/* تحسين المسافات */
+.nav-sidebar .nav-link p {
+    margin: 0;
+}
+
+
+.pagination .page-link {
+    color: #fff;
+    background-color: #343a40; /* نفس لون الـ sidebar */
+    border: none;
+    margin: 0px 5px;
+}
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+}
+
+
+
+.nav-sidebar .nav-link {
+    display: flex;
+    align-items: center;
+}
+.nav-sidebar .nav-icon {
+    margin-right: .5rem;
+}
+
+/* Submenu styling */
+.sidebar-menu  .nav-treeview > .nav-item > .nav-link {
+    background-color: #2f3e4e;   /* لون مختلف عن الـ parent */
+    margin-left: 0.5rem;           /* مسافة من الشمال */
+    border-radius: 4px;
+    margin-bottom: 4px;          /* مسافة بين العناصر */
+    padding-left: 30px;          /* يخلي الأيقونة والنص يبعدوا شويه */
+}
+
+/* تغيير لون الـ hover */
+.sidebar-menu  .nav-treeview > .nav-item > .nav-link:hover {
+    background-color: #3d4f63;
+    color: #ffffff;
+}
+
+/* الأيقونة تبقى متباعدة */
+.sidebar-menu .nav-treeview .nav-icon {
+    margin-right: 10px;
+}
+
+.sidebar-menu .nav-item{
+    width: 98%;
+}
+
+
+/* Smooth submenu transition */
+.sidebar-menu .nav-treeview {
+    display: none;
+    transition: all 0.3s ease;
+    padding-left: 10px;
+}
+
+.sidebar-menu .nav-item.menu-open > .nav-treeview {
+    display: block;
+}
+
+.sidebar-menu .fas.fa-angle-right {
+    transition: transform 0.3s ease;
+}
+
+.sidebar-menu .fas.fa-angle-right.rotate {
+    transform: rotate(90deg); /* يخلي السهم لتحت */
+}
+
+
+.nav-item.has-treeview.menu-open > a .fa-angle-right {
+    transform: rotate(90deg);
+    transition: transform 0.3s ease;
+}
+
+
+
+
+/* تحسين مظهر عناصر الساب منيو: لون مختلف ومسافة يسار */
+.sidebar-menu .app-sidebar .nav-treeview > .nav-item > .nav-link {
+  background-color: #2f3e4e;      /* غيّر اللون لو حابب */
+  margin-left: .5rem;              /* مسافة يسار */
+  border-radius: .25rem;
+  margin-bottom: .25rem;           /* مسافة بين العناصر */
+  padding-left: 1.25rem;           /* إزاحة للنص والأيقونة */
+}
+.sidebar-menu .app-sidebar .nav-treeview > .nav-item > .nav-link:hover {
+  background-color: #3d4f63;
+  color: #fff;
+}
+
+
+/* السهم الأساسي */
+.sidebar-menu .app-sidebar .nav-arrow {
+  width: 1rem;              /* ثبات عرض العنصر */
+  display: inline-block;    /* ياخد مساحة ثابتة */
+  text-align: center;
+  transition: transform .3s ease;
+  vertical-align: middle;   /* يخليه في وسط السطر */
+}
+
+/* السهم عند الفتح */
+.sidebar-menu .app-sidebar .menu-open > .nav-link .nav-arrow {
+  transform: rotate(90deg);
+          margin-top:-6px;
+}
