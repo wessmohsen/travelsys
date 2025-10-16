@@ -38,7 +38,14 @@ class TransferContractController extends Controller
             'status' => 'required|in:active,inactive',
         ]);
 
-        TransferContract::create($request->all());
+        $data = $request->all();
+
+        // Set "Company Name" to "Not-Company" if the contract type is "driver"
+        if ($data['contract_type'] === 'driver') {
+            $data['company_name'] = 'Not-Company';
+        }
+
+        TransferContract::create($data);
 
         return redirect()->route('transfercontracts.index')->with('success', 'Contract created successfully');
     }
@@ -69,11 +76,17 @@ class TransferContractController extends Controller
             'to' => 'required|string|max:255',
             'contract_type' => 'required|in:driver,company',
             'contract_date' => 'required|date',
-            'status' => 'required|in:active,inactive', // ✅ هنا التغيير
+            'status' => 'required|in:active,inactive',
         ]);
 
+        $data = $request->all();
 
-        $transfercontract->update($request->all());
+        // Set "Company Name" to "Not-Company" if the contract type is "driver"
+        if ($data['contract_type'] === 'driver') {
+            $data['company_name'] = 'Not-Company';
+        }
+
+        $transfercontract->update($data);
 
         return redirect()->route('transfercontracts.index')->with('success', 'Contract updated successfully');
     }

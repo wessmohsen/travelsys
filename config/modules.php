@@ -21,6 +21,7 @@ return [
     ['name' => 'Customers', 'route' => 'customers.index', 'icon' => 'fas fa-users'],
     ['name' => 'Bookings', 'route' => 'bookings.index', 'icon' => 'fas fa-calendar-check'],
     ['name' => 'Agencies', 'route' => 'agencies.index', 'icon' => 'fas fa-building'],
+    ['name' => 'Operation Programs', 'route' => 'trip-programs.index', 'icon' => 'fa-solid fa-layer-group'],
 
     // Reports
     ['name' => 'Booking Reports', 'route' => 'reports.bookings', 'icon' => 'fas fa-chart-line'],

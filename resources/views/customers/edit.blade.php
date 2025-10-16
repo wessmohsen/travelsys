@@ -46,8 +46,8 @@
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label>Email</label>
-                                    <input type="email" name="email" value="{{ old('email', $item->email) }}" class="form-control">
+                                    <label>Email <span class="text-danger">*</span></label>
+                                    <input type="email" name="email" value="{{ old('email', $item->email) }}" class="form-control" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label>Phone</label>

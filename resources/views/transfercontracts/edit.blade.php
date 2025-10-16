@@ -10,6 +10,20 @@
             @method('PUT')
 
             <div class="mb-3">
+                <label>Contract Type</label>
+                <select name="contract_type" id="contract_type" class="form-control" required>
+                    <option value="driver" {{ $item->contract_type == 'driver' ? 'selected' : '' }}>Driver</option>
+                    <option value="company" {{ $item->contract_type == 'company' ? 'selected' : '' }}>Company</option>
+                </select>
+            </div>
+
+            <div class="mb-3" id="company_name_field">
+                <label>Company Name</label>
+                <input type="text" name="company_name" id="company_name" class="form-control"
+                    value="{{ old('company_name', $item->company_name) }}">
+            </div>
+
+            <div class="mb-3">
                 <label>Driver</label>
                 <select name="driver_id" class="form-control">
                     <option value="">-- Select Driver --</option>
@@ -33,12 +47,6 @@
                 </select>
             </div>
 
-            <div class="mb-3">
-                <label>Company</label>
-                <input type="text" name="company_name" class="form-control"
-                    value="{{ old('company_name', $item->company_name) }}">
-            </div>
-
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label>From</label>
@@ -48,14 +56,6 @@
                     <label>To</label>
                     <input type="text" name="to" class="form-control" value="{{ $item->to }}" required>
                 </div>
-            </div>
-
-            <div class="mb-3">
-                <label>Contract Type</label>
-                <select name="contract_type" class="form-control" required>
-                    <option value="driver" {{ $item->contract_type == 'driver' ? 'selected' : '' }}>Driver</option>
-                    <option value="company" {{ $item->contract_type == 'company' ? 'selected' : '' }}>Company</option>
-                </select>
             </div>
 
             <div class="mb-3">
@@ -74,4 +74,25 @@
             <button type="submit" class="btn btn-success">Update</button>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const contractType = document.getElementById('contract_type');
+            const companyNameField = document.getElementById('company_name_field');
+            const companyNameInput = document.getElementById('company_name');
+
+            function toggleCompanyNameField() {
+                if (contractType.value === 'driver') {
+                    companyNameField.style.display = 'none';
+                    companyNameInput.value = 'Not-Company';
+                } else {
+                    companyNameField.style.display = 'block';
+                    companyNameInput.value = '';
+                }
+            }
+
+            contractType.addEventListener('change', toggleCompanyNameField);
+            toggleCompanyNameField(); // Initialize on page load
+        });
+    </script>
 @endsection
