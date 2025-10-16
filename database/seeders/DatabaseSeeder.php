@@ -20,10 +20,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::firstOrCreate(
-            ['email' => 'admin@example.com'],
+            ['email' => 'admin@admin.com'],
             [
                 'name' => 'Admin User',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('123123123'),
             ]
         );
 
@@ -40,5 +40,9 @@ class DatabaseSeeder extends Seeder
         $this->call(TransferContractSeeder::class);
         // $this->call(AdminUserSeeder::class);
         $this->call(CertificationSeeder::class);
+        $this->call([
+        TripProgramSeeder::class,
+        // ProgramFamilySeeder::class, // optional, only if you want extra families
+        ]);
     }
 }

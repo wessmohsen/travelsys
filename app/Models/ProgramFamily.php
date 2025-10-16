@@ -13,9 +13,16 @@ class ProgramFamily extends Model
         'trip_program_id',
         'customer_id',
         'group_name',
+        'company_id',
+        'vehicle_id',
+        'boat_id',
+        'guide_id',
         'adults',
         'children',
         'infants',
+        'collect_egp',
+        'collect_usd',
+        'collect_eur',
         'hotel_id',
         'room_number',
         'pickup_time',
@@ -23,25 +30,64 @@ class ProgramFamily extends Model
         'size',
         'nationality',
         'boat_master',
-        'guide_name',
         'transfer_name',
         'transfer_phone',
-        'collect_egp',
-        'collect_usd',
-        'collect_eur',
         'remarks',
     ];
 
-    // Relationships
-    public function tripProgram() {
+    /**
+     * Relation to the TripProgram model.
+     */
+    public function tripProgram()
+    {
         return $this->belongsTo(TripProgram::class);
     }
 
-    public function customer() {
+    /**
+     * Relation to the Customer model.
+     */
+    public function customer()
+    {
         return $this->belongsTo(Customer::class);
     }
 
-    public function hotel() {
+    /**
+     * Relation to the Agency model.
+     */
+    public function company()
+    {
+        return $this->belongsTo(Agency::class, 'company_id');
+    }
+
+    /**
+     * Relation to the Vehicle model.
+     */
+    public function vehicle()
+    {
+        return $this->belongsTo(Vehicle::class);
+    }
+
+    /**
+     * Relation to the Boat model.
+     */
+    public function boat()
+    {
+        return $this->belongsTo(Boat::class);
+    }
+
+    /**
+     * Relation to the Guide model.
+     */
+    public function guide()
+    {
+        return $this->belongsTo(Guide::class);
+    }
+
+    /**
+     * Relation to the Hotel model.
+     */
+    public function hotel()
+    {
         return $this->belongsTo(Hotel::class);
     }
 }

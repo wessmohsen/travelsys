@@ -15,6 +15,7 @@ use App\Http\Controllers\DivingCourseController;
 use App\Http\Controllers\GuideController;
 use App\Http\Controllers\TransferContractController;
 use App\Http\Controllers\AgencyController;
+use App\Http\Controllers\TripProgramController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -34,7 +35,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('customers', App\Http\Controllers\CustomerController::class);
     Route::resource('customers.subcustomers', App\Http\Controllers\SubCustomerController::class);
     Route::resource('subcustomers', App\Http\Controllers\SubCustomerController::class);
-    Route::get('subcustomers/{id}/edit', [SubCustomerController::class, 'edit'])->name('subcustomers.edit');
+    // Route::get('subcustomers/{id}/edit', [SubCustomerController::class, 'edit'])->name('subcustomers.edit');
     Route::delete('customers/{customer}/subcustomers', [CustomerController::class, 'deleteSubCustomers'])->name('customers.subcustomers.delete');
 
 
@@ -60,6 +61,7 @@ Route::middleware(['auth'])->group(function () {
         'guides' => GuideController::class,
         'transfercontracts' => TransferContractController::class,
         'agencies' => AgencyController::class,
+        'trip-programs' => TripProgramController::class,
     ]);
 });
 

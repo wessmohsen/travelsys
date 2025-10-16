@@ -12,40 +12,52 @@ class TripProgram extends Model
     protected $fillable = [
         'trip_id',
         'date',
-        'company_id',
-        'guide_id',
-        'boat_id',
-        'vehicle_id',
-        'total_adults',
-        'total_children',
-        'total_infants',
-        'total_amount',
+        'organizer_id',
         'remarks',
         'status',
+        'last_modified_at',
     ];
 
-    // Relationships
-    public function trip() {
+    protected $casts = [
+        'date' => 'date',
+        'last_modified_at' => 'datetime',
+    ];
+
+    /**
+     * Booted method to handle model events.
+     */
+    protected static function booted()
+    {
+        static::updating(function ($tripProgram) {
+            $tripProgram->last_modified_at = now();
+        });
+    }
+
+    /**
+     * Relation to the Trip model.
+     */
+    public function trip()
+    {
         return $this->belongsTo(Trip::class);
     }
 
-    public function company() {
-        return $this->belongsTo(Agency::class, 'company_id');
-    }
-
-    public function guide() {
-        return $this->belongsTo(Guide::class);
-    }
-
-    public function boat() {
-        return $this->belongsTo(Boat::class);
-    }
-
-    public function vehicle() {
-        return $this->belongsTo(Vehicle::class);
-    }
-
-    public function families() {
+    /**
+     * Relation to the ProgramFamily model.
+     */
+    public function families()
+    {
         return $this->hasMany(ProgramFamily::class);
     }
+
+    /**
+     * Relation to the User model (organizer).
+     */
+    public function organizer()
+    {
+        return $this->belongsTo(User::class, 'organizer_id');
+    }
 }
+    // {
+    //     return $this->hasMany(ProgramFamily::class);
+    // }
+
