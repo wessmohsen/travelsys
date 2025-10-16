@@ -1,7 +1,7 @@
 <nav class="app-header navbar navbar-expand bg-body">
     <div class="container-fluid">
         <a href="{{ url('/dashboard') }}" class="navbar-brand">
-            <span class="brand-text fw-bold">Travel Admin</span>
+            <span class="brand-text fw-bold">Sambo System</span>
         </a>
         <ul class="navbar-nav ms-auto">
             <li class="nav-item dropdown">

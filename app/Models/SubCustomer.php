@@ -5,22 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Customer extends Model
+class SubCustomer extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        // النوع + الفندق + الغرفة
-        'customer_type', // كان اسمها type، الآن أفضل نسميها customer_type لتفادي تعارض الكلمات المحجوزة في Laravel
-        'hotel_id',
-        'room_number',
-
-        // كل الحقول القديمة
+        'customer_id',
+        'relation_type',
+        'responsible_name',
         'first_name',
         'last_name',
-        'email',
         'dob',
         'gender',
+        'nationality',
+        'email',
         'phone',
         'passport_number',
         'passport_nationality',
@@ -30,13 +28,14 @@ class Customer extends Model
         'dive_center_checkout',
         'next_flight_date',
         'vegetarian',
+        'hotel_id',
+        'room_number',
         'address',
         'city',
         'state',
         'zipcode',
         'country',
         'additional_info',
-        'type', // ✅ Add 'type' to fillable fields
     ];
 
     protected $casts = [
@@ -48,34 +47,26 @@ class Customer extends Model
         'vegetarian' => 'boolean',
     ];
 
-    // ✅ العلاقات
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 
-    // الفندق
     public function hotel()
     {
         return $this->belongsTo(Hotel::class);
     }
 
-    // العملاء الفرعيين (أفراد العائلة)
-    public function subCustomers()
-    {
-        // return $this->hasMany(SubCustomer::class);
-        return $this->hasMany(SubCustomer::class);
-    }
-
-    // شهادات الغوص (العلاقة متعددة الأشكال)
     public function certifications()
     {
         return $this->morphMany(CustomerCertification::class, 'certifiable');
     }
 
-    // ملفات العميل (صور / مستندات)
     public function files()
     {
         return $this->morphMany(CustomerFile::class, 'fileable');
     }
 
-    // ✅ Accessor لعرض الاسم الكامل بسهولة
     public function getNameAttribute()
     {
         return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? ''));

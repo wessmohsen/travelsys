@@ -30,11 +30,21 @@ Route::middleware(['auth'])->group(function () {
     // Reports
     Route::get('/reports/bookings', [BookingReportController::class, 'index'])->name('reports.bookings');
     Route::get('/reports/customers', [BookingReportController::class, 'customers'])->name('reports.customers');
+    // Customers + Sub Customers
+    Route::resource('customers', App\Http\Controllers\CustomerController::class);
+    Route::resource('customers.subcustomers', App\Http\Controllers\SubCustomerController::class);
+    Route::resource('subcustomers', App\Http\Controllers\SubCustomerController::class);
+    Route::get('subcustomers/{id}/edit', [SubCustomerController::class, 'edit'])->name('subcustomers.edit');
+    Route::delete('customers/{customer}/subcustomers', [CustomerController::class, 'deleteSubCustomers'])->name('customers.subcustomers.delete');
 
-Route::get('/ajax/customers', [BookingController::class, 'ajaxCustomers'])->name('ajax.customers');
-Route::get('/ajax/trips', [BookingController::class, 'ajaxTrips'])->name('ajax.trips');
 
-Route::get('/api/customers/search', [App\Http\Controllers\CustomerController::class, 'search'])->name('customers.search');
+
+
+
+    Route::get('/ajax/customers', [BookingController::class, 'ajaxCustomers'])->name('ajax.customers');
+    Route::get('/ajax/trips', [BookingController::class, 'ajaxTrips'])->name('ajax.trips');
+
+    Route::get('/api/customers/search', [App\Http\Controllers\CustomerController::class, 'search'])->name('customers.search');
 
 
     // Resource routes (CRUD)

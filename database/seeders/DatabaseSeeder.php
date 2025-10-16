@@ -39,5 +39,6 @@ class DatabaseSeeder extends Seeder
         $this->call(AgencySeeder::class);
         $this->call(TransferContractSeeder::class);
         // $this->call(AdminUserSeeder::class);
+        $this->call(CertificationSeeder::class);
     }
 }

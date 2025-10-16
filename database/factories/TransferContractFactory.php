@@ -17,7 +17,7 @@ class TransferContractFactory extends Factory
         return [
             'driver_id' => Driver::inRandomOrder()->value('id'),
             'vehicle_id' => Vehicle::inRandomOrder()->value('id'),
-            'company_name' => $this->faker->companyName(),
+            'company_name' => $this->faker->company(),
             'from' => $this->faker->city(),
             'to' => $this->faker->city(),
             'contract_type' => $this->faker->randomElement(['driver', 'company']),

@@ -1,6 +1,6 @@
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
   <a href="{{ route('dashboard') }}" class="brand-link text-center">
-    <span class="brand-text font-weight-bold">Travel System</span>
+    <span class="brand-text font-weight-bold">Sambo System</span>
   </a>
 
   <div class="sidebar-wrapper">

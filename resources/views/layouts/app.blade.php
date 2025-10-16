@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Travel Agency Admin</title>
+    <title>Sambo Operation System</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ asset('dist/css/adminlte.css') }}">
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
