@@ -8,5 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Boat extends Model
 {
     use HasFactory;
-    protected $fillable = ['name','capacity'];
+    protected $fillable = [
+        'name',
+        'description',
+        'capacity',
+    ];
 }

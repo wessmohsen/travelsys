@@ -14,5 +14,6 @@ class Trip extends Model
         'location',
         'date',
         'price',
+        'description',
     ];
 }

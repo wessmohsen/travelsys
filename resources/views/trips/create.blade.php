@@ -20,6 +20,10 @@
             <label>Price</label>
             <input type="number" step="0.01" name="price" class="form-control">
         </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea name="description" id="description" class="form-control" rows="3">{{ old('description') }}</textarea>
+        </div>
         <button class="btn btn-success">Save</button>
     </form>
 </div>

@@ -20,43 +20,44 @@ class TripController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'location' => 'nullable|string|max:255',
-            'date' => 'nullable|date',
-            'price' => 'nullable|numeric',
+            'location' => 'required|string|max:255',
+            'date' => 'required|date',
+            'price' => 'required|numeric',
+            'description' => 'nullable|string', // Validate description
         ]);
 
-        Trip::create($request->all());
+        Trip::create($validated);
 
         return redirect()->route('trips.index')->with('success', 'Trip created successfully.');
     }
 
     public function edit($id)
     {
-        $item = Trip::findOrFail($id);
-        return view('trips.edit', compact('item'));
+        $trip = Trip::findOrFail($id); // Retrieve the trip by its ID
+        return view('trips.edit', compact('trip')); // Pass the trip to the view
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Trip $trip)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'location' => 'nullable|string|max:255',
-            'date' => 'nullable|date',
-            'price' => 'nullable|numeric',
+            'location' => 'required|string|max:255',
+            'date' => 'required|date',
+            'price' => 'required|numeric',
+            'description' => 'nullable|string', // Validate description
         ]);
 
-        $item = Trip::findOrFail($id);
-        $item->update($request->all());
+        $trip->update($validated);
 
         return redirect()->route('trips.index')->with('success', 'Trip updated successfully.');
     }
 
     public function destroy($id)
     {
-        $item = Trip::findOrFail($id);
-        $item->delete();
+        $trip = Trip::findOrFail($id);
+        $trip->delete();
 
         return redirect()->route('trips.index')->with('success', 'Trip deleted successfully.');
     }
