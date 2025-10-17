@@ -19,12 +19,12 @@
         <div><strong>Trip:</strong> {{ $tripProgram->trip->name ?? '-' }}</div>
         <div><strong>Status:</strong> {{ ucfirst($tripProgram->status) }}</div>
     </div>
-    <div class="grid grid-4" style="margin-bottom:10px">
-        <div><strong>Adults:</strong> {{ $tripProgram->total_adults }}</div>
-        <div><strong>Children:</strong> {{ $tripProgram->total_children }}</div>
-        <div><strong>Infants:</strong> {{ $tripProgram->total_infants }}</div>
-        <div><strong>Total Amount:</strong> {{ number_format($tripProgram->total_amount,2) }}</div>
+
+    <div class="grid grid-3" style="margin-top:10px">
+        <div><strong>Organizer:</strong> {{ $tripProgram->organizer->name ?? 'N/A' }}</div>
+        <div><strong>Last Modified:</strong> {{ $tripProgram->last_modified_at ? $tripProgram->last_modified_at->format('Y-m-d H:i') : 'N/A' }}</div>
     </div>
+
     @if($tripProgram->remarks)
         <div class="muted"><strong>Remarks:</strong> {{ $tripProgram->remarks }}</div>
     @endif
@@ -101,6 +101,4 @@
     </table>
 </div>
 
-<p><strong>Organizer:</strong> {{ $tripProgram->organizer->name ?? 'N/A' }}</p>
-<p><strong>Last Modified:</strong> {{ $tripProgram->last_modified_at ? $tripProgram->last_modified_at->format('Y-m-d H:i') : 'N/A' }}</p>
 @endsection
