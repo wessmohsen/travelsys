@@ -11,7 +11,6 @@ class TripFactory extends Factory
         return [
             'name' => $this->faker->sentence(3),
             'location' => $this->faker->city(),
-            'date' => $this->faker->date(),
             'price' => $this->faker->randomFloat(2, 50, 1000),
         ];
     }

@@ -2,6 +2,10 @@
 @section('content')
 <div class="container-fluid">
     <h1>Add Trip</h1>
+    @include('partials.breadcrumbs', ['crumbs' => [
+        ['href' => route('trips.index'), 'text' => 'Trips'],
+        ['text' => 'Add Trip']
+    ]])
     <form method="POST" action="{{ route('trips.store') }}">
         @csrf
         <div class="mb-3">
@@ -11,10 +15,6 @@
         <div class="mb-3">
             <label>Location</label>
             <input type="text" name="location" class="form-control">
-        </div>
-        <div class="mb-3">
-            <label>Date</label>
-            <input type="date" name="date" class="form-control">
         </div>
         <div class="mb-3">
             <label>Price</label>

@@ -12,7 +12,6 @@ class Trip extends Model
     protected $fillable = [
         'name',
         'location',
-        'date',
         'price',
         'description',
     ];

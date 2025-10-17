@@ -15,7 +15,7 @@ class BookingFactory extends Factory
     {
         return [
             'customer_id' => Customer::factory(),
-            'trip_id' => Trip::factory(),
+            'trip_id' => Trip::inRandomOrder()->first()?->id ?? Trip::factory(),
             'date' => $this->faker->dateTimeBetween('-1 month', '+1 month'),
             'status' => $this->faker->randomElement(['pending','confirmed','cancelled']),
             'price' => $this->faker->randomFloat(2, 100, 2000),

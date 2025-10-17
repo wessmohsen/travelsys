@@ -23,7 +23,6 @@ class TripController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
-            'date' => 'required|date',
             'price' => 'required|numeric',
             'description' => 'nullable|string', // Validate description
         ]);
@@ -44,7 +43,6 @@ class TripController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
-            'date' => 'required|date',
             'price' => 'required|numeric',
             'description' => 'nullable|string', // Validate description
         ]);

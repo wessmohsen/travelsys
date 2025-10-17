@@ -17,7 +17,7 @@ class TripProgramFactory extends Factory
     public function definition(): array
     {
         return [
-            'trip_id' => Trip::factory(),
+            'trip_id' => Trip::inRandomOrder()->first()?->id ?? Trip::factory(),
             'date' => $this->faker->date(),
             'organizer_id' => \App\Models\User::factory(),
             'remarks' => $this->faker->sentence(),
