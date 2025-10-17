@@ -17,8 +17,11 @@ class TripProgramController extends Controller
             ->with(['trip']) // Removed 'vehicle'
             ->latest('date');
 
-        if ($request->filled('date')) {
-            $query->whereDate('date', $request->date);
+        if ($request->filled('from_date')) {
+            $query->whereDate('date', '>=', $request->from_date);
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('date', '<=', $request->to_date);
         }
         if ($request->filled('trip_id')) {
             $query->where('trip_id', $request->trip_id);

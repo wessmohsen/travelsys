@@ -11,8 +11,12 @@
     <div class="card p-3 mb-4">
         <form method="get" class="d-flex flex-wrap gap-3 align-items-end">
             <div style="flex: 1;">
-                <label class="muted">Date</label>
-                <input type="date" name="date" value="{{ request('date') }}" class="form-control" />
+                <label class="muted">From Date</label>
+                <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-control" />
+            </div>
+            <div style="flex: 1;">
+                <label class="muted">To Date</label>
+                <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control" />
             </div>
             <div style="flex: 1;">
                 <label class="muted">Trip</label>
