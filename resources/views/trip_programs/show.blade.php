@@ -62,7 +62,24 @@
             <tr>
                 <td>{{ $idx+1 }}</td>
                 <td>
-                    {{ $fam->customer->name ?? $fam->group_name ?? '-' }}
+                    @php
+                        $displayNames = [];
+
+                        // Get customer names from customer_id array
+                        if (!empty($fam->customer_id) && is_array($fam->customer_id)) {
+                            $customers = \App\Models\Customer::whereIn('id', $fam->customer_id)->get();
+                            foreach ($customers as $customer) {
+                                $displayNames[] = $customer->name;
+                            }
+                        }
+
+                        // Add group name if exists
+                        if (!empty($fam->group_name)) {
+                            $displayNames[] = $fam->group_name;
+                        }
+
+                        echo !empty($displayNames) ? implode(', ', $displayNames) : '-';
+                    @endphp
                 </td>
                 <td>{{ $fam->adults }}</td>
                 <td>{{ $fam->children }}</td>

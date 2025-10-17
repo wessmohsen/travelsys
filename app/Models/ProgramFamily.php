@@ -40,6 +40,31 @@ class ProgramFamily extends Model
         'infants' => 0,
     ];
 
+    protected $casts = [
+        'customer_id' => 'array', // Cast JSON to array
+    ];
+
+    /**
+     * Get customer names from customer IDs
+     */
+    public function getCustomerNamesAttribute()
+    {
+        if (empty($this->customer_id)) {
+            return [];
+        }
+
+        // customer_id is already cast to array by Laravel
+        $customerIds = $this->customer_id;
+
+        if (empty($customerIds) || !is_array($customerIds)) {
+            return [];
+        }
+
+        return Customer::whereIn('id', $customerIds)->get()->map(function($customer) {
+            return $customer->name;
+        })->toArray();
+    }
+
     /**
      * Relation to the TripProgram model.
      */
@@ -49,11 +74,16 @@ class ProgramFamily extends Model
     }
 
     /**
-     * Relation to the Customer model.
+     * Get customers from the customer_id array
+     * Note: customer_id is now an array (JSON), not a foreign key
      */
-    public function customer()
+    public function customers()
     {
-        return $this->belongsTo(Customer::class);
+        if (empty($this->customer_id) || !is_array($this->customer_id)) {
+            return collect([]);
+        }
+
+        return Customer::whereIn('id', $this->customer_id)->get();
     }
 
     /**

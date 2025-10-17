@@ -7,11 +7,27 @@
         <div class="customer-tags-container" data-index="{{ $i }}" style="min-height: 40px; border: 1px solid #ddd; border-radius: 4px; padding: 5px; background: white; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
             @php
                 $existingCustomers = [];
+
+                // Handle customer_id (can be JSON array or single ID)
                 if (!empty($fam['customer_id'])) {
-                    $existingCustomers[] = ['id' => $fam['customer_id'], 'name' => $fam['customer']['name'] ?? 'Customer #' . $fam['customer_id']];
+                    $customerIds = is_array($fam['customer_id']) ? $fam['customer_id'] : json_decode($fam['customer_id'], true);
+                    if (!is_array($customerIds)) {
+                        $customerIds = [$fam['customer_id']];
+                    }
+
+                    // Get customer names
+                    $customers = \App\Models\Customer::whereIn('id', $customerIds)->get();
+                    foreach ($customers as $customer) {
+                        $existingCustomers[] = ['id' => $customer->id, 'name' => $customer->name];
+                    }
                 }
+
+                // Handle group_name
                 if (!empty($fam['group_name'])) {
-                    $existingCustomers[] = ['id' => '', 'name' => $fam['group_name']];
+                    $groupNames = explode(', ', $fam['group_name']);
+                    foreach ($groupNames as $groupName) {
+                        $existingCustomers[] = ['id' => '', 'name' => trim($groupName)];
+                    }
                 }
             @endphp
             @foreach($existingCustomers as $cust)

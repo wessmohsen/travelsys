@@ -19,14 +19,7 @@ class TripProgramFactory extends Factory
         return [
             'trip_id' => Trip::factory(),
             'date' => $this->faker->date(),
-            'company_id' => Agency::factory(),
-            'guide_id' => Guide::factory(),
-            'boat_id' => Boat::factory(),
-            'vehicle_id' => Vehicle::factory(),
-            'total_adults' => $this->faker->numberBetween(1, 20),
-            'total_children' => $this->faker->numberBetween(0, 10),
-            'total_infants' => $this->faker->numberBetween(0, 5),
-            'total_amount' => $this->faker->randomFloat(2, 100, 5000),
+            'organizer_id' => \App\Models\User::factory(),
             'remarks' => $this->faker->sentence(),
             'status' => $this->faker->randomElement(['draft', 'confirmed', 'done']),
         ];

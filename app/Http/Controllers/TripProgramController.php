@@ -59,7 +59,18 @@ class TripProgramController extends Controller
     {
         $validated = $this->validateProgram($request);
 
-        DB::transaction(function () use ($validated) {
+        // Debug: Log the customers data
+        \Log::info('=== STORE DEBUG ===');
+        \Log::info('Request families:', ['families' => $request->input('families')]);
+        if (isset($validated['families']) && is_array($validated['families'])) {
+            foreach ($validated['families'] as $idx => $fam) {
+                if (isset($fam['customers'])) {
+                    \Log::info("Family {$idx} customers:", ['customers' => $fam['customers'], 'count' => count($fam['customers'])]);
+                }
+            }
+        }
+
+        DB::transaction(function () use ($validated, $request) {
             // Create program
             $program = TripProgram::create([
                 'trip_id' => $validated['trip_id'],
@@ -73,6 +84,33 @@ class TripProgramController extends Controller
             $totAmount = 0;
 
             foreach ($validated['families'] ?? [] as $fam) {
+                // Extract customers array
+                $customerIds = [];
+                $groupNames = [];
+
+                if (isset($fam['customers']) && is_array($fam['customers']) && !empty($fam['customers'])) {
+                    foreach ($fam['customers'] as $customerData) {
+                        if (strpos($customerData, 'customer:') === 0) {
+                            // It's a customer ID
+                            $customerIds[] = (int) str_replace('customer:', '', $customerData);
+                        } elseif (strpos($customerData, 'group:') === 0) {
+                            // It's a group name
+                            $groupNames[] = str_replace('group:', '', $customerData);
+                        }
+                    }
+                }
+
+                // Remove the customers array as it's not a database field
+                if (isset($fam['customers'])) {
+                    unset($fam['customers']);
+                }
+
+                // Store customer IDs as array (Laravel will auto json_encode with the cast)
+                $fam['customer_id'] = !empty($customerIds) ? $customerIds : null;
+
+                // Store group names as comma-separated string, or null if empty
+                $fam['group_name'] = !empty($groupNames) ? implode(', ', $groupNames) : null;
+
                 $family = new ProgramFamily($fam);
                 $program->families()->save($family);
 
@@ -80,8 +118,6 @@ class TripProgramController extends Controller
                 $totChildren += (int) ($fam['children'] ?? 0);
                 $totInfants += (int) ($fam['infants'] ?? 0);
 
-                // NOTE: For now we sum raw values of currencies as "total_amount".
-                // You can replace with conversion logic if needed.
                 $totAmount += (float) ($fam['collect_egp'] ?? 0)
                     + (float) ($fam['collect_usd'] ?? 0)
                     + (float) ($fam['collect_eur'] ?? 0);
@@ -104,10 +140,9 @@ class TripProgramController extends Controller
     public function show(TripProgram $tripProgram, Request $request)
     {
         $tripProgram->load([
-            'trip', // Removed 'vehicle'
-            'families.customer',
+            'trip',
             'families.hotel',
-            'families.transferContract'
+            'families.transferContract.driver'
         ]);
 
         // Simple export toggles (placeholder)
@@ -127,6 +162,7 @@ class TripProgramController extends Controller
      */
     public function edit(TripProgram $tripProgram)
     {
+        // Don't eager load customer since customer_id is now an array
         $tripProgram->load(['families']);
 
         return view('trip_programs.edit', [
@@ -155,7 +191,7 @@ class TripProgramController extends Controller
         // Log the validated data for debugging
         \Log::info('Validated data', ['data' => $validated]);
 
-        DB::transaction(function () use ($validated, $tripProgram, $request) {
+        DB::transaction(function () use ($validated, $tripProgram) {
             // Update the trip program
             $tripProgram->update([
                 'trip_id' => $validated['trip_id'],
@@ -169,8 +205,35 @@ class TripProgramController extends Controller
             $existingFamilyIds = $tripProgram->families->pluck('id')->toArray();
             $submittedFamilyIds = [];
 
-            if ($request->has('families')) {
-                foreach ($request->families as $familyData) {
+            if (isset($validated['families']) && is_array($validated['families'])) {
+                foreach ($validated['families'] as $familyData) {
+                    // Extract customers array
+                    $customerIds = [];
+                    $groupNames = [];
+
+                    if (isset($familyData['customers']) && is_array($familyData['customers']) && !empty($familyData['customers'])) {
+                        foreach ($familyData['customers'] as $customerData) {
+                            if (strpos($customerData, 'customer:') === 0) {
+                                // It's a customer ID
+                                $customerIds[] = (int) str_replace('customer:', '', $customerData);
+                            } elseif (strpos($customerData, 'group:') === 0) {
+                                // It's a group name
+                                $groupNames[] = str_replace('group:', '', $customerData);
+                            }
+                        }
+                    }
+
+                    // Remove the customers array as it's not a database field
+                    if (isset($familyData['customers'])) {
+                        unset($familyData['customers']);
+                    }
+
+                    // Store customer IDs as array (Laravel will auto json_encode with the cast)
+                    $familyData['customer_id'] = !empty($customerIds) ? $customerIds : null;
+
+                    // Store group names as comma-separated string, or null if empty
+                    $familyData['group_name'] = !empty($groupNames) ? implode(', ', $groupNames) : null;
+
                     // Ensure default values for required fields
                     $familyData['adults'] = $familyData['adults'] ?? 0;
                     $familyData['children'] = $familyData['children'] ?? 0;
@@ -186,7 +249,8 @@ class TripProgramController extends Controller
                     } else {
                         // Create new family
                         $familyData['trip_program_id'] = $tripProgram->id;
-                        ProgramFamily::create($familyData);
+                        $newFamily = ProgramFamily::create($familyData);
+                        $submittedFamilyIds[] = $newFamily->id;
                     }
                 }
             }
@@ -279,9 +343,30 @@ class TripProgramController extends Controller
             'status' => 'nullable|in:draft,confirmed,done',
             'remarks' => 'nullable|string',
             'families' => 'array',
+            'families.*.id' => 'nullable|integer',
+            'families.*.customer_id' => 'nullable|exists:customers,id',
+            'families.*.group_name' => 'nullable|string',
+            'families.*.customers' => 'nullable|array',
+            'families.*.customers.*' => 'nullable|string',
+            'families.*.agency_id' => 'nullable|exists:agencies,id',
             'families.*.adults' => 'nullable|integer|min:0',
             'families.*.children' => 'nullable|integer|min:0',
             'families.*.infants' => 'nullable|integer|min:0',
+            'families.*.hotel_id' => 'nullable|exists:hotels,id',
+            'families.*.room_number' => 'nullable|string',
+            'families.*.pickup_time' => 'nullable',
+            'families.*.activity' => 'nullable|string',
+            'families.*.size' => 'nullable|string',
+            'families.*.nationality' => 'nullable|string',
+            'families.*.boat_master' => 'nullable|string',
+            'families.*.boat_id' => 'nullable|exists:boats,id',
+            'families.*.guide_id' => 'nullable|exists:guides,id',
+            'families.*.transfer_contract_id' => 'nullable|exists:transfer_contracts,id',
+            'families.*.vehicle_id' => 'nullable|exists:vehicles,id',
+            'families.*.collect_egp' => 'nullable|numeric|min:0',
+            'families.*.collect_usd' => 'nullable|numeric|min:0',
+            'families.*.collect_eur' => 'nullable|numeric|min:0',
+            'families.*.remarks' => 'nullable|string',
         ]);
     }
 

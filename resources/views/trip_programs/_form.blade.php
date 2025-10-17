@@ -81,7 +81,12 @@
             </thead>
             <tbody>
                 @php
-                    $rows = old('families', isset($program) ? $program->families->toArray() : []);
+                    $rows = old('families', isset($program) ? $program->families->map(function($family) {
+                        $familyArray = $family->toArray();
+                        // customer_id is now an array (JSON), no need to load customer relationship
+                        // The view will handle loading customer names from the array
+                        return $familyArray;
+                    })->toArray() : []);
                 @endphp
 
                 @forelse($rows as $i => $fam)
