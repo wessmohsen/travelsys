@@ -103,6 +103,27 @@
     </div>
 </div>
 
+<!-- Bootstrap Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="border-bottom: 1px solid #dee2e6; padding: 12px 16px;">
+                <h5 class="modal-title" id="deleteConfirmModalLabel" style="font-size: 0.95rem; font-weight: 500;">
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="font-size: 0.8rem;"></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <p style="margin-bottom: 0; font-size: 0.95rem;">Are you sure you want to remove this family/group?</p>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 12px 16px; gap: 8px;">
+                <button type="button" class="btn btn-primary" id="confirmDeleteBtn" style="min-width: 80px;">OK</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="min-width: 80px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -200,14 +221,37 @@
                     cleanTrailingPipes();
                 });
 
-                // Delete row (supports both classes just in case)
-                // Handle Remove Row button click
+                // Delete row - Bootstrap Modal Confirmation
+                var rowToDelete = null;
+
+                // Handle Remove Row button click - Show modal
                 jQuery(document).on('click', '.remove-row', function () {
                     var $row = jQuery(this).closest('tr');
-                    var deletedId = $row.data('id'); // from data-id="{{ $fam['id'] ?? '' }}"
 
-                    var confirmDelete = confirm('Are you sure you want to remove this family/group?');
-                    if (!confirmDelete) return;
+                    // Store the row to delete and show modal
+                    rowToDelete = $row;
+
+                    // Show Bootstrap modal
+                    var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+                    deleteModal.show();
+                });
+
+                // Handle OK button in modal
+                jQuery('#confirmDeleteBtn').on('click', function() {
+                    // Delete the row
+                    if (rowToDelete) {
+                        deleteRow(rowToDelete);
+                        rowToDelete = null;
+                    }
+
+                    // Hide modal
+                    var deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+                    deleteModal.hide();
+                });
+
+                // Function to actually delete the row
+                function deleteRow($row) {
+                    var deletedId = $row.data('id');
 
                     // If this row represents an existing record, track it
                     if (deletedId) {
@@ -222,6 +266,11 @@
                     } else {
                         alert('At least one row is required.');
                     }
+                }
+
+                // Reset rowToDelete when modal is closed without confirming
+                jQuery('#deleteConfirmModal').on('hidden.bs.modal', function() {
+                    rowToDelete = null;
                 });
 
                 // Handle Duplicate Row button click
