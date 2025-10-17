@@ -127,7 +127,14 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const checkbox = document.getElementById('toggleCustomerColumn');
-    const customerColumns = document.querySelectorAll('.customer-column');
+
+    // Function to toggle columns - queries DOM each time
+    function toggleColumns(show) {
+        const customerColumns = document.querySelectorAll('.customer-column');
+        customerColumns.forEach(function(col) {
+            col.style.display = show ? '' : 'none';
+        });
+    }
 
     // Load saved preference from localStorage
     const savedState = localStorage.getItem('showCustomerColumn');
@@ -141,12 +148,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Save preference to localStorage
         localStorage.setItem('showCustomerColumn', this.checked);
     });
-
-    function toggleColumns(show) {
-        customerColumns.forEach(function(col) {
-            col.style.display = show ? '' : 'none';
-        });
-    }
 });
 </script>
 

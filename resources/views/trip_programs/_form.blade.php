@@ -114,6 +114,17 @@
             jQuery(function () {
                 var rowIndex = jQuery('#families-table tbody tr').length;
 
+                // Get checkbox reference
+                const checkbox = document.getElementById('toggleCustomerColumn');
+
+                // Function to toggle columns - queries DOM each time to include dynamically added rows
+                function toggleColumns(show) {
+                    const customerColumns = document.querySelectorAll('.customer-column');
+                    customerColumns.forEach(function(col) {
+                        col.style.display = show ? '' : 'none';
+                    });
+                }
+
                 // Prepare dropdown options HTML
                 var agencyOptions = `<option value="">-- Select Agency --</option>@foreach($agencies as $agency)<option value="{{ $agency->id }}">{{ $agency->name }}</option>@endforeach`;
                 var hotelOptions = `<option value="">--</option>@foreach($hotels as $h)<option value="{{ $h->id }}">{{ $h->name }}</option>@endforeach`;
@@ -127,7 +138,7 @@
                     var newRow = `
                         <tr data-id="">
                             <input type="hidden" name="families[${rowIndex}][id]" value="">
-                            <td style="position: relative;">
+                            <td class="customer-column" style="position: relative;">
                                 <div class="customer-tags-container" data-index="${rowIndex}" style="min-height: 40px; border: 1px solid #ddd; border-radius: 4px; padding: 5px; background: white; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
                                     <input type="text"
                                            class="customer-search-input"
@@ -180,6 +191,9 @@
                             </td>
                         </tr>`;
                     jQuery('#families-table tbody').append(newRow);
+
+                    // Apply current customer column visibility to new row
+                    toggleColumns(checkbox.checked);
 
                     // Clean up trailing pipes in the newly added row
                     cleanTrailingPipes();
@@ -341,28 +355,19 @@
                     }
                 });
 
-                // Toggle Customer Column visibility
-                const checkbox = document.getElementById('toggleCustomerColumn');
-                const customerColumns = document.querySelectorAll('.customer-column');
-
-                // Load saved preference from localStorage
+                // Load saved preference from localStorage and apply it
                 const savedState = localStorage.getItem('showCustomerColumn');
                 if (savedState !== null) {
                     checkbox.checked = savedState === 'true';
                     toggleColumns(checkbox.checked);
                 }
 
+                // Toggle Customer Column visibility on checkbox change
                 checkbox.addEventListener('change', function() {
                     toggleColumns(this.checked);
                     // Save preference to localStorage
                     localStorage.setItem('showCustomerColumn', this.checked);
                 });
-
-                function toggleColumns(show) {
-                    customerColumns.forEach(function(col) {
-                        col.style.display = show ? '' : 'none';
-                    });
-                }
 
             });
         });
