@@ -48,8 +48,12 @@
 <div class="card">
     <h3>Section 2: Families / Groups</h3>
 
-    <div style="margin-bottom:10px">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
         <button type="button" class="btn btn-primary" id="add-family-row">+ Add Family/Group</button>
+        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+            <input type="checkbox" id="toggleCustomerColumn" checked>
+            <span>Show Customer Column</span>
+        </label>
     </div>
 
     <input type="hidden" name="deleted_families" id="deleted-families" value="">
@@ -58,7 +62,7 @@
         <table id="families-table" class="table table-bordered" style="min-width: 100%;">
             <thead>
                 <tr>
-                    <th>Customer / Group Name</th>
+                    <th class="customer-column">Customer / Group Name</th>
                     <th>Company</th>
                     <th>Adults</th>
                     <th>Children</th>
@@ -336,6 +340,29 @@
                         jQuery('.customer-suggestions').hide();
                     }
                 });
+
+                // Toggle Customer Column visibility
+                const checkbox = document.getElementById('toggleCustomerColumn');
+                const customerColumns = document.querySelectorAll('.customer-column');
+
+                // Load saved preference from localStorage
+                const savedState = localStorage.getItem('showCustomerColumn');
+                if (savedState !== null) {
+                    checkbox.checked = savedState === 'true';
+                    toggleColumns(checkbox.checked);
+                }
+
+                checkbox.addEventListener('change', function() {
+                    toggleColumns(this.checked);
+                    // Save preference to localStorage
+                    localStorage.setItem('showCustomerColumn', this.checked);
+                });
+
+                function toggleColumns(show) {
+                    customerColumns.forEach(function(col) {
+                        col.style.display = show ? '' : 'none';
+                    });
+                }
 
             });
         });

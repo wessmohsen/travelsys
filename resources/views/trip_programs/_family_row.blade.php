@@ -3,7 +3,7 @@
 @endphp
 <tr data-id="{{ $fam['id'] ?? '' }}">
     <input type="hidden" name="families[{{ $i }}][id]" value="{{ $fam['id'] ?? '' }}">
-    <td style="position: relative;">
+    <td class="customer-column" style="position: relative;">
         <div class="customer-tags-container" data-index="{{ $i }}" style="min-height: 40px; border: 1px solid #ddd; border-radius: 4px; padding: 5px; background: white; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
             @php
                 $existingCustomers = [];

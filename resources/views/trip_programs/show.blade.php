@@ -33,12 +33,18 @@
 <br>
 
 <div class="card">
-    <h3 style="margin-top:0">Families / Groups (MARSA MU layout style)</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="margin: 0;">Families / Groups (MARSA MU layout style)</h3>
+        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+            <input type="checkbox" id="toggleCustomerColumn" checked>
+            <span>Show Customer Column</span>
+        </label>
+    </div>
     <table>
         <thead>
             <tr>
                 <th>#</th>
-                <th>Customer / Group</th>
+                <th class="customer-column">Customer / Group</th>
                 <th>A</th>
                 <th>C</th>
                 <th>I</th>
@@ -61,7 +67,7 @@
         @foreach($tripProgram->families as $idx => $fam)
             <tr>
                 <td>{{ $idx+1 }}</td>
-                <td>
+                <td class="customer-column">
                     @php
                         $displayNames = [];
 
@@ -117,5 +123,31 @@
         </tbody>
     </table>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.getElementById('toggleCustomerColumn');
+    const customerColumns = document.querySelectorAll('.customer-column');
+
+    // Load saved preference from localStorage
+    const savedState = localStorage.getItem('showCustomerColumn');
+    if (savedState !== null) {
+        checkbox.checked = savedState === 'true';
+        toggleColumns(checkbox.checked);
+    }
+
+    checkbox.addEventListener('change', function() {
+        toggleColumns(this.checked);
+        // Save preference to localStorage
+        localStorage.setItem('showCustomerColumn', this.checked);
+    });
+
+    function toggleColumns(show) {
+        customerColumns.forEach(function(col) {
+            col.style.display = show ? '' : 'none';
+        });
+    }
+});
+</script>
 
 @endsection
