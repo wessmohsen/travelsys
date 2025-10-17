@@ -66,8 +66,13 @@ class User extends Authenticatable
     /**
      * Check if user has any of the given roles.
      */
-    public function hasAnyRole(array $roles): bool
+    public function hasAnyRole(...$roles): bool
     {
+        // If first argument is an array, use it directly
+        if (is_array($roles[0] ?? null)) {
+            $roles = $roles[0];
+        }
+
         return $this->roles()->whereIn('slug', $roles)->exists();
     }
 

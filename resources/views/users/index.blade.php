@@ -6,7 +6,9 @@
     @include('partials.breadcrumbs')
     @include('partials.flash')
 
+    @can('create-users')
     <a href="{{ route('users.create') }}" class="btn btn-success mb-3">+ Add User</a>
+    @endcan
 
     <table class="table table-bordered">
         <thead>
@@ -16,7 +18,9 @@
                 <th>Email</th>
                 <th>Roles</th>
                 <th>Created At</th>
+                @canany(['edit-users', 'delete-users'])
                 <th>Actions</th>
+                @endcanany
             </tr>
         </thead>
         <tbody>
@@ -33,15 +37,22 @@
                     @endforelse
                 </td>
                 <td>{{ $user->created_at->format('Y-m-d') }}</td>
+                @canany(['edit-users', 'delete-users'])
                 <td>
+                    @can('edit-users')
                     <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary btn-sm">Edit</a>
+                    @endcan
+
+                    @can('delete-users')
                     @if($user->id !== Auth::id())
                     <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="delete-form" style="display:inline">
                         @csrf @method('DELETE')
                         <button type="button" class="btn btn-danger btn-sm delete-btn" data-message="Are you sure you want to delete this user?">Delete</button>
                     </form>
                     @endif
+                    @endcan
                 </td>
+                @endcanany
             </tr>
             @empty
             <tr>

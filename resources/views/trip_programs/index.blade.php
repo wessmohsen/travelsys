@@ -39,9 +39,11 @@
             <div>
                 <button class="btn btn-primary">Filter</button>
             </div>
+            @can('create-trip-programs')
             <div>
                 <a href="{{ route('trip-programs.create') }}" class="btn btn-success">+ New Daily Program</a>
             </div>
+            @endcan
         </form>
     </div>
 
@@ -54,7 +56,9 @@
                     <th>Organizer</th>
                     <th>Status</th>
                     <th>Remarks</th>
+                    @canany(['edit-trip-programs', 'delete-trip-programs'])
                     <th style="width:220px">Actions</th>
+                    @endcanany
                 </tr>
             </thead>
             <tbody>
@@ -65,14 +69,24 @@
                         <td>{{ $p->organizer->name ?? '-' }}</td>
                         <td><span class="badge bg-info text-dark">{{ ucfirst($p->status) }}</span></td>
                         <td>{{ $p->remarks ?? '-' }}</td>
+                        @canany(['edit-trip-programs', 'delete-trip-programs'])
                         <td class="actions">
+                            @can('view-trip-programs')
                             <a class="btn btn-primary btn-sm" href="{{ route('trip-programs.show',$p) }}">View</a>
+                            @endcan
+
+                            @can('edit-trip-programs')
                             <a class="btn btn-warning btn-sm" href="{{ route('trip-programs.edit',$p) }}">Edit</a>
-                            <form action="{{ route('trip-programs.destroy',$p) }}" method="post" style="display:inline" onsubmit="return confirm('Delete program?')">
+                            @endcan
+
+                            @can('delete-trip-programs')
+                            <form action="{{ route('trip-programs.destroy',$p) }}" method="post" class="delete-form" style="display:inline">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-danger btn-sm">Delete</button>
+                                <button type="button" class="btn btn-danger btn-sm delete-btn" data-message="Are you sure you want to delete this program?">Delete</button>
                             </form>
+                            @endcan
                         </td>
+                        @endcanany
                     </tr>
                 @empty
                     <tr><td colspan="6" class="text-center">No programs found.</td></tr>
@@ -84,5 +98,7 @@
             {{ $programs->links('pagination::bootstrap-4') }}
         </div>
     </div>
+
+    @include('partials.delete-modal')
 </div>
 @endsection

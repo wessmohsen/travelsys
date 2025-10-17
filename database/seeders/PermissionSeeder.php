@@ -43,6 +43,18 @@ class PermissionSeeder extends Seeder
             ['name' => 'Edit Bookings', 'slug' => 'edit-bookings', 'description' => 'Can edit existing bookings'],
             ['name' => 'Delete Bookings', 'slug' => 'delete-bookings', 'description' => 'Can delete bookings'],
 
+            // Trip Program Management
+            ['name' => 'View Trip Programs', 'slug' => 'view-trip-programs', 'description' => 'Can view the list of trip programs'],
+            ['name' => 'Create Trip Programs', 'slug' => 'create-trip-programs', 'description' => 'Can create new trip programs'],
+            ['name' => 'Edit Trip Programs', 'slug' => 'edit-trip-programs', 'description' => 'Can edit existing trip programs'],
+            ['name' => 'Delete Trip Programs', 'slug' => 'delete-trip-programs', 'description' => 'Can delete trip programs'],
+
+            // Program Family Management
+            ['name' => 'View Program Families', 'slug' => 'view-program-families', 'description' => 'Can view the list of program families'],
+            ['name' => 'Create Program Families', 'slug' => 'create-program-families', 'description' => 'Can create new program families'],
+            ['name' => 'Edit Program Families', 'slug' => 'edit-program-families', 'description' => 'Can edit existing program families'],
+            ['name' => 'Delete Program Families', 'slug' => 'delete-program-families', 'description' => 'Can delete program families'],
+
             // Reports
             ['name' => 'View Reports', 'slug' => 'view-reports', 'description' => 'Can view system reports'],
         ];

@@ -39,9 +39,30 @@ class RoleSeeder extends Seeder
             'view-users',
             'view-customers', 'create-customers', 'edit-customers',
             'view-bookings', 'create-bookings', 'edit-bookings',
+            'view-trip-programs', 'create-trip-programs', 'edit-trip-programs', 'delete-trip-programs',
+            'view-program-families', 'create-program-families', 'edit-program-families', 'delete-program-families',
             'view-reports',
         ])->get();
         $manager->permissions()->sync($managerPermissions);
+
+        // Create Operation Manager Role
+        $operationManager = Role::firstOrCreate(
+            ['slug' => 'operation-manager'],
+            [
+                'name' => 'Operation Manager',
+                'description' => 'Operations manager with access to trip programs and master data'
+            ]
+        );
+
+        // Operation Manager gets trip program and master data permissions
+        $operationManagerPermissions = Permission::whereIn('slug', [
+            'view-customers', 'create-customers', 'edit-customers',
+            'view-bookings', 'create-bookings', 'edit-bookings',
+            'view-trip-programs', 'create-trip-programs', 'edit-trip-programs', 'delete-trip-programs',
+            'view-program-families', 'create-program-families', 'edit-program-families', 'delete-program-families',
+            'view-reports',
+        ])->get();
+        $operationManager->permissions()->sync($operationManagerPermissions);
 
         // Create User Role
         $user = Role::firstOrCreate(

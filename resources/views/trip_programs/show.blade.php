@@ -7,7 +7,10 @@
         <a class="btn" href="{{ route('trip-programs.index') }}">&larr; Back</a>
         <a class="btn" href="{{ route('trip-programs.show', $tripProgram) }}?export=pdf">Export PDF</a>
         <a class="btn" href="{{ route('trip-programs.show', $tripProgram) }}?export=excel">Export Excel</a>
+
+        @can('edit-trip-programs')
         <a class="btn" href="{{ route('trip-programs.edit',$tripProgram) }}">Edit</a>
+        @endcan
     </div>
 </div>
 

@@ -28,63 +28,71 @@ Auth::routes();
 
 Route::middleware(['auth'])->group(function () {
 
-    // Dashboard
+    // Dashboard - accessible by all authenticated users
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Profile
+    // Profile - accessible by all authenticated users
     Route::get('/profile', [UserController::class, 'profile'])->name('profile');
     Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
 
-    // Reports
-    Route::get('/reports/bookings', [BookingReportController::class, 'index'])->name('reports.bookings');
-    Route::get('/reports/customers', [BookingReportController::class, 'customers'])->name('reports.customers');
-    // Customers + Sub Customers
+    // User Management - Admin and Manager only
+    Route::middleware(['role:admin,manager'])->group(function () {
+        Route::resource('users', UserController::class);
+    });
+
+    // Role Management - Admin only
+    Route::middleware(['role:admin'])->group(function () {
+        Route::resource('roles', RoleController::class);
+        Route::resource('permissions', PermissionController::class);
+    });
+
+    // Reports - accessible by Admin, Manager, and Operation Manager
+    Route::middleware(['role:admin,manager,operation-manager'])->group(function () {
+        Route::get('/reports/bookings', [BookingReportController::class, 'index'])->name('reports.bookings');
+        Route::get('/reports/customers', [BookingReportController::class, 'customers'])->name('reports.customers');
+    });
+
+    // Customers - accessible by all authenticated users
     Route::resource('customers', App\Http\Controllers\CustomerController::class);
     Route::resource('customers.subcustomers', App\Http\Controllers\SubCustomerController::class);
     Route::resource('subcustomers', App\Http\Controllers\SubCustomerController::class);
-    // Route::get('subcustomers/{id}/edit', [SubCustomerController::class, 'edit'])->name('subcustomers.edit');
     Route::delete('customers/{customer}/subcustomers', [CustomerController::class, 'deleteSubCustomers'])->name('customers.subcustomers.delete');
+    Route::get('/api/customers/search', [App\Http\Controllers\CustomerController::class, 'search'])->name('customers.search');
 
-
-
-
-
+    // AJAX routes - accessible by all authenticated users
     Route::get('/ajax/customers', [BookingController::class, 'ajaxCustomers'])->name('ajax.customers');
     Route::get('/ajax/trips', [BookingController::class, 'ajaxTrips'])->name('ajax.trips');
 
-    Route::get('/api/customers/search', [App\Http\Controllers\CustomerController::class, 'search'])->name('customers.search');
+    // Bookings - accessible by all authenticated users
+    Route::resource('bookings', BookingController::class);
 
+    // Trip Programs - Admin, Manager, and Operation Manager only
+    Route::middleware(['role:admin,manager,operation-manager'])->group(function () {
+        Route::resource('trip-programs', TripProgramController::class);
+        Route::delete('trip-programs/families/{family}', [TripProgramController::class, 'destroyFamily'])
+            ->name('trip-programs.families.destroy');
+        Route::delete('program-families/{id}/delete', [TripProgramController::class, 'destroyFamily'])->name('program-families.destroy');
+        Route::delete('trip-programs/{program}/families/{family}', [TripProgramController::class, 'deleteFamily'])->name('trip-programs.families.delete');
+        Route::delete('trip-programs/delete-family/{id}', [TripProgramController::class, 'deleteProgramFamily'])->name('trip-programs.delete-family');
+        Route::post('ajax/delete-family/{id}', [TripProgramController::class, 'ajaxDeleteFamily'])->name('ajax.delete-family');
+        Route::delete('ajax/program-family/{family}', [TripProgramController::class, 'ajaxDeleteProgramFamily'])->name('ajax.program-family.delete');
+        Route::delete('program-families/{id}', [TripProgramController::class, 'deleteProgramFamily'])->name('program-families.delete');
+        Route::post('delete-program-family/{id}', [TripProgramController::class, 'deleteProgramFamily'])
+            ->name('delete-program-family');
+    });
 
-    // Resource routes (CRUD)
-    Route::resources([
-        'users' => UserController::class,
-        'roles' => RoleController::class,
-        'permissions' => PermissionController::class,
-        'hotels' => HotelController::class,
-        'trips' => TripController::class,
-        'customers' => CustomerController::class,
-        'bookings' => BookingController::class,
-        'boats' => BoatController::class,
-        'drivers' => DriverController::class,
-        'vehicles' => VehicleController::class,
-        'diving-courses' => DivingCourseController::class,
-        'guides' => GuideController::class,
-        'transfercontracts' => TransferContractController::class,
-        'agencies' => AgencyController::class,
-        'trip-programs' => TripProgramController::class,
-    ]);
-
-    Route::delete('trip-programs/families/{family}', [TripProgramController::class, 'destroyFamily'])
-        ->name('trip-programs.families.destroy');
-    Route::delete('program-families/{id}/delete', [TripProgramController::class, 'destroyFamily'])->name('program-families.destroy');
-    Route::delete('trip-programs/{program}/families/{family}', [TripProgramController::class, 'deleteFamily'])->name('trip-programs.families.delete');
-    Route::delete('trip-programs/delete-family/{id}', [TripProgramController::class, 'deleteProgramFamily'])->name('trip-programs.delete-family');
-    Route::post('ajax/delete-family/{id}', [TripProgramController::class, 'ajaxDeleteFamily'])->name('ajax.delete-family');
-    Route::delete('ajax/program-family/{family}', [TripProgramController::class, 'ajaxDeleteProgramFamily'])->name('ajax.program-family.delete');
-    Route::delete('program-families/{id}', [TripProgramController::class, 'deleteProgramFamily'])->name('program-families.delete');
-    Route::post('delete-program-family/{id}', [TripProgramController::class, 'deleteProgramFamily'])
-        ->name('delete-program-family');
-    Route::resource('trip-programs', TripProgramController::class);
+    // Master Data Management - Admin and Manager only (NOT Operation Manager)
+    Route::middleware(['role:admin,manager'])->group(function () {
+        Route::resource('hotels', HotelController::class);
+        Route::resource('trips', TripController::class);
+        Route::resource('boats', BoatController::class);
+        Route::resource('drivers', DriverController::class);
+        Route::resource('vehicles', VehicleController::class);
+        Route::resource('diving-courses', DivingCourseController::class);
+        Route::resource('guides', GuideController::class);
+        Route::resource('transfercontracts', TransferContractController::class);
+        Route::resource('agencies', AgencyController::class);
+    });
 });
 
 
