@@ -41,7 +41,7 @@ class TripProgramController extends Controller
     public function create()
     {
         return view('trip_programs.create', [
-            'trips'    => Trip::orderBy('name')->get(['id', 'name']),
+            'trips' => Trip::orderBy('name')->get(['id', 'name']),
             'organizers' => User::orderBy('name')->get(['id', 'name']), // Add organizers for the dropdown
             'hotels' => Hotel::orderBy('name')->get(['id', 'name']), // Pass hotels for the dropdown
             'boats' => Boat::orderBy('name')->get(['id', 'name']), // Pass boats for the dropdown
@@ -61,11 +61,11 @@ class TripProgramController extends Controller
         DB::transaction(function () use ($validated) {
             // Create program
             $program = TripProgram::create([
-                'trip_id'        => $validated['trip_id'],
-                'date'           => $validated['date'],
-                'organizer_id'   => auth()->id(),
-                'remarks'        => $validated['remarks'] ?? null,
-                'status'         => $validated['status'] ?? 'draft',
+                'trip_id' => $validated['trip_id'],
+                'date' => $validated['date'],
+                'organizer_id' => auth()->id(),
+                'remarks' => $validated['remarks'] ?? null,
+                'status' => $validated['status'] ?? 'draft',
             ]);
 
             $totAdults = $totChildren = $totInfants = 0;
@@ -75,22 +75,22 @@ class TripProgramController extends Controller
                 $family = new ProgramFamily($fam);
                 $program->families()->save($family);
 
-                $totAdults   += (int) ($fam['adults']   ?? 0);
+                $totAdults += (int) ($fam['adults'] ?? 0);
                 $totChildren += (int) ($fam['children'] ?? 0);
-                $totInfants  += (int) ($fam['infants']  ?? 0);
+                $totInfants += (int) ($fam['infants'] ?? 0);
 
                 // NOTE: For now we sum raw values of currencies as "total_amount".
                 // You can replace with conversion logic if needed.
                 $totAmount += (float) ($fam['collect_egp'] ?? 0)
-                           + (float) ($fam['collect_usd'] ?? 0)
-                           + (float) ($fam['collect_eur'] ?? 0);
+                    + (float) ($fam['collect_usd'] ?? 0)
+                    + (float) ($fam['collect_eur'] ?? 0);
             }
 
             $program->update([
-                'total_adults'   => $totAdults,
+                'total_adults' => $totAdults,
                 'total_children' => $totChildren,
-                'total_infants'  => $totInfants,
-                'total_amount'   => $totAmount,
+                'total_infants' => $totInfants,
+                'total_amount' => $totAmount,
             ]);
         });
 
@@ -104,7 +104,8 @@ class TripProgramController extends Controller
     {
         $tripProgram->load([
             'trip', // Removed 'vehicle'
-            'families.customer', 'families.hotel'
+            'families.customer',
+            'families.hotel'
         ]);
 
         // Simple export toggles (placeholder)
@@ -127,8 +128,8 @@ class TripProgramController extends Controller
         $tripProgram->load(['families']);
 
         return view('trip_programs.edit', [
-            'program'  => $tripProgram,
-            'trips'    => Trip::orderBy('name')->get(['id', 'name']),
+            'program' => $tripProgram,
+            'trips' => Trip::orderBy('name')->get(['id', 'name']),
             'organizers' => User::orderBy('name')->get(['id', 'name']), // Add organizers for the dropdown
             'hotels' => Hotel::orderBy('name')->get(['id', 'name']), // Pass hotels for the dropdown
             'boats' => Boat::orderBy('name')->get(['id', 'name']), // Pass boats for the dropdown
@@ -151,20 +152,57 @@ class TripProgramController extends Controller
         // Log the validated data for debugging
         \Log::info('Validated data', ['data' => $validated]);
 
-        // Update the trip program
-        $tripProgram->update([
-            'trip_id' => $validated['trip_id'],
-            'date' => $validated['date'],
-            'organizer_id' => $validated['organizer_id'],
-            'remarks' => $validated['remarks'] ?? null,
-            'status' => $validated['status'] ?? $tripProgram->status,
-        ]);
+        DB::transaction(function () use ($validated, $tripProgram, $request) {
+            // Update the trip program
+            $tripProgram->update([
+                'trip_id' => $validated['trip_id'],
+                'date' => $validated['date'],
+                'organizer_id' => $validated['organizer_id'],
+                'remarks' => $validated['remarks'] ?? null,
+                'status' => $validated['status'] ?? $tripProgram->status,
+            ]);
+
+            // Handle families
+            $existingFamilyIds = $tripProgram->families->pluck('id')->toArray();
+            $submittedFamilyIds = [];
+
+            if ($request->has('families')) {
+                foreach ($request->families as $familyData) {
+                    // Ensure default values for required fields
+                    $familyData['adults'] = $familyData['adults'] ?? 0;
+                    $familyData['children'] = $familyData['children'] ?? 0;
+                    $familyData['infants'] = $familyData['infants'] ?? 0;
+
+                    if (!empty($familyData['id'])) {
+                        // Update existing family
+                        $family = ProgramFamily::find($familyData['id']);
+                        if ($family) {
+                            $family->update($familyData);
+                            $submittedFamilyIds[] = $familyData['id'];
+                        }
+                    } else {
+                        // Create new family
+                        $familyData['trip_program_id'] = $tripProgram->id;
+                        ProgramFamily::create($familyData);
+                    }
+                }
+            }
+
+            // Delete families not in the submitted data
+            $familiesToDelete = array_diff($existingFamilyIds, $submittedFamilyIds);
+            if (!empty($familiesToDelete)) {
+                ProgramFamily::whereIn('id', $familiesToDelete)->delete();
+            }
+        });
 
         // Log the successful update
         \Log::info('Trip program updated', ['id' => $tripProgram->id]);
 
-        return redirect()->route('trip-programs.index')->with('success', 'Trip program updated successfully.');
+        // Redirect back to the edit page with success message
+        return redirect()->route('trip-programs.edit', $tripProgram->id)
+            ->with('success', 'Trip program updated successfully.');
     }
+
 
     /**
      * destroy()
@@ -237,6 +275,10 @@ class TripProgramController extends Controller
             'organizer_id' => 'required|exists:users,id',
             'status' => 'nullable|in:draft,confirmed,done',
             'remarks' => 'nullable|string',
+            'families' => 'array',
+            'families.*.adults' => 'nullable|integer|min:0',
+            'families.*.children' => 'nullable|integer|min:0',
+            'families.*.infants' => 'nullable|integer|min:0',
         ]);
     }
 

@@ -184,6 +184,7 @@
                         @if($item->customer_type === 'family')
                             <!-- ✅ FAMILY MEMBERS -->
                             <div class="tab-pane fade" id="sub">
+                                <input type="hidden" name="families[{{ $i }}][id]" value="{{ $fam['id'] ?? '' }}">
                                 @include('customers.partials.subcustomers')
                             </div>
                         @endif
@@ -264,6 +265,44 @@
                     }
                 } else {
                     toggleFamilyTab();
+                }
+            });
+
+            // Handle Delete Row button click (use event delegation for dynamically added rows)
+            jQuery(document).on('click', '.delete-family', function () {
+                const $btn = jQuery(this);
+                const $row = $btn.closest('tr');
+                const familyId = $btn.data('id');
+
+                console.log('Delete button clicked', { familyId }); // Debugging: Ensure the event is triggered
+
+                if (familyId) {
+                    if (confirm('Are you sure you want to delete this family?')) {
+                        jQuery.ajax({
+                            url: `/program-families/${familyId}`,
+                            type: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            success: function (response) {
+                                console.log('Family deleted successfully', response); // Debugging: Ensure the AJAX request is successful
+                                $row.fadeOut(300, function () {
+                                    jQuery(this).remove();
+                                });
+                            },
+                            error: function (xhr) {
+                                console.error('Error deleting family', xhr); // Debugging: Log the error
+                                alert('Failed to delete family. Please try again.');
+                            }
+                        });
+                    }
+                } else {
+                    // If no `data-id`, simply remove the row
+                    if (jQuery('#families-table tbody tr').length > 1) {
+                        $row.remove();
+                    } else {
+                        alert('At least one row is required.');
+                    }
                 }
             });
         });

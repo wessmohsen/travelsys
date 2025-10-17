@@ -13,7 +13,7 @@ class ProgramFamily extends Model
         'trip_program_id',
         'customer_id',
         'group_name',
-        'company_id',
+        'agency_id',
         'vehicle_id',
         'boat_id',
         'guide_id',
@@ -35,6 +35,12 @@ class ProgramFamily extends Model
         'remarks',
     ];
 
+    protected $attributes = [
+        'adults' => 0,
+        'children' => 0,
+        'infants' => 0,
+    ];
+
     /**
      * Relation to the TripProgram model.
      */
@@ -54,9 +60,9 @@ class ProgramFamily extends Model
     /**
      * Relation to the Agency model.
      */
-    public function company()
+    public function agency()
     {
-        return $this->belongsTo(Agency::class, 'company_id');
+        return $this->belongsTo(Agency::class, 'agency_id');
     }
 
     /**
