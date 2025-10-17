@@ -142,44 +142,28 @@ class TripProgramController extends Controller
      */
     public function update(Request $request, TripProgram $tripProgram)
     {
+        // Log the request data for debugging
+        \Log::info('Update request received', ['data' => $request->all()]);
+
+        // Validate the request
         $validated = $this->validateProgram($request);
 
-        DB::transaction(function () use ($validated, $tripProgram) {
-            $tripProgram->update([
-                'trip_id'    => $validated['trip_id'],
-                'date'       => $validated['date'],
-                'organizer_id' => auth()->id(),
-                'remarks'    => $validated['remarks'] ?? null,
-                'status'     => $validated['status'] ?? $tripProgram->status,
-            ]);
+        // Log the validated data for debugging
+        \Log::info('Validated data', ['data' => $validated]);
 
-            // Replace all families for simplicity (atomic):
-            $tripProgram->families()->delete();
+        // Update the trip program
+        $tripProgram->update([
+            'trip_id' => $validated['trip_id'],
+            'date' => $validated['date'],
+            'organizer_id' => $validated['organizer_id'],
+            'remarks' => $validated['remarks'] ?? null,
+            'status' => $validated['status'] ?? $tripProgram->status,
+        ]);
 
-            $totAdults = $totChildren = $totInfants = 0;
-            $totAmount = 0;
+        // Log the successful update
+        \Log::info('Trip program updated', ['id' => $tripProgram->id]);
 
-            foreach ($validated['families'] ?? [] as $fam) {
-                $tripProgram->families()->create($fam);
-
-                $totAdults   += (int) ($fam['adults']   ?? 0);
-                $totChildren += (int) ($fam['children'] ?? 0);
-                $totInfants  += (int) ($fam['infants']  ?? 0);
-
-                $totAmount += (float) ($fam['collect_egp'] ?? 0)
-                           + (float) ($fam['collect_usd'] ?? 0)
-                           + (float) ($fam['collect_eur'] ?? 0);
-            }
-
-            $tripProgram->update([
-                'total_adults'   => $totAdults,
-                'total_children' => $totChildren,
-                'total_infants'  => $totInfants,
-                'total_amount'   => $totAmount,
-            ]);
-        });
-
-        return redirect()->route('trip-programs.index')->with('success', 'Trip program updated.');
+        return redirect()->route('trip-programs.index')->with('success', 'Trip program updated successfully.');
     }
 
     /**
@@ -192,44 +176,100 @@ class TripProgramController extends Controller
     }
 
     /**
+     * destroyFamily()
+     */
+    public function destroyFamily(ProgramFamily $family)
+    {
+        try {
+            $family->delete();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            \Log::error('Error deleting family: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete family'], 500);
+        }
+    }
+
+    /**
+     * Delete a family from a trip program
+     */
+    public function deleteFamily($familyId)
+    {
+        try {
+            $family = ProgramFamily::findOrFail($familyId);
+            $family->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Family deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error deleting family: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete family'
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a family from a trip program by ID
+     */
+    public function deleteProgramFamily($id)
+    {
+        try {
+            $family = ProgramFamily::findOrFail($id);
+            $family->delete();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to delete family: ' . $e->getMessage());
+            return response()->json(['success' => false], 500);
+        }
+    }
+
+    /**
      * Central validation (includes rule: either customer_id OR group_name must be provided per family)
      */
     protected function validateProgram(Request $request): array
     {
-        $messages = [
-            'families.*.customer_id.required_without' => 'Provide either Customer or Group Name.',
-            'families.*.group_name.required_without'  => 'Provide either Group Name or Customer.',
-        ];
-
         return $request->validate([
-            // Section 1: Trip info
-            'trip_id'    => ['required','exists:trips,id'],
-            'date'       => ['required','date'],
-            'organizer_id' => ['required','exists:users,id'],
-            'status'     => ['nullable','in:draft,confirmed,done'],
-            'remarks'    => ['nullable','string'],
+            'trip_id' => 'required|exists:trips,id',
+            'date' => 'required|date',
+            'organizer_id' => 'required|exists:users,id',
+            'status' => 'nullable|in:draft,confirmed,done',
+            'remarks' => 'nullable|string',
+        ]);
+    }
 
-            // Section 2: Families / Groups
-            'families'                       => ['nullable','array'],
-            'families.*.customer_id'         => ['nullable','exists:customers,id','required_without:families.*.group_name'],
-            'families.*.group_name'          => ['nullable','string','required_without:families.*.customer_id'],
-            'families.*.adults'              => ['nullable','integer','min:0'],
-            'families.*.children'            => ['nullable','integer','min:0'],
-            'families.*.infants'             => ['nullable','integer','min:0'],
-            'families.*.hotel_id'            => ['nullable','exists:hotels,id'],
-            'families.*.room_number'         => ['nullable','string','max:100'],
-            'families.*.pickup_time'         => ['nullable','date_format:H:i'],
-            'families.*.activity'            => ['nullable','string','max:50'],
-            'families.*.size'                => ['nullable','string','max:50'],
-            'families.*.nationality'         => ['nullable','string','max:100'],
-            'families.*.boat_master'         => ['nullable','string','max:100'],
-            'families.*.guide_name'          => ['nullable','string','max:100'],
-            'families.*.transfer_name'       => ['nullable','string','max:100'],
-            'families.*.transfer_phone'      => ['nullable','string','max:100'],
-            'families.*.collect_egp'         => ['nullable','numeric','min:0'],
-            'families.*.collect_usd'         => ['nullable','numeric','min:0'],
-            'families.*.collect_eur'         => ['nullable','numeric','min:0'],
-            'families.*.remarks'             => ['nullable','string'],
-        ], $messages);
+    /**
+     * Delete a family via AJAX (for DataTables or other dynamic interfaces)
+     */
+    public function ajaxDeleteFamily($id)
+    {
+        try {
+            $family = ProgramFamily::findOrFail($id);
+            $family->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Family deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to delete family: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete family'
+            ], 500);
+        }
+    }
+
+    public function ajaxDeleteProgramFamily(ProgramFamily $family)
+    {
+        try {
+            $family->delete();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            \Log::error('Error deleting program family: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to delete family'], 500);
+        }
     }
 }

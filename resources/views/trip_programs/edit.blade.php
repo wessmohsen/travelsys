@@ -1,12 +1,18 @@
 @extends('layouts.app')
-@section('title','Edit Daily Program')
 
 @section('content')
-<form method="post" action="{{ route('trip-programs.update',$program) }}">
-    @csrf @method('PUT')
-    @include('trip_programs._form')
-    <br>
-    <button class="btn btn-primary">Update Program</button>
-    <a class="btn" href="{{ route('trip-programs.index') }}">Cancel</a>
-</form>
+<div class="container-fluid">
+    <h1>Edit Trip Program</h1>
+    <form method="POST" action="{{ route('trip-programs.update', $program->id) }}">
+        @csrf
+        @method('PUT')
+
+        @include('trip_programs._form')
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{{ route('trip-programs.index') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
 @endsection

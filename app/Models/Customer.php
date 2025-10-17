@@ -19,24 +19,24 @@ class Customer extends Model
         'first_name',
         'last_name',
         'email',
+        'phone',
         'dob',
         'gender',
-        'phone',
+        'vegetarian',
+        'customer_type',
         'passport_number',
         'passport_nationality',
         'passport_valid_until',
-        'languages',
         'dive_center_checkin',
         'dive_center_checkout',
         'next_flight_date',
-        'vegetarian',
         'address',
         'city',
         'state',
         'zipcode',
         'country',
+        'languages',
         'additional_info',
-        'type', // ✅ Add 'type' to fillable fields
     ];
 
     protected $casts = [

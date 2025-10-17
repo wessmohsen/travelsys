@@ -50,4 +50,18 @@ class HotelController extends Controller
         $hotel->delete();
         return redirect()->route('hotels.index')->with('success','Hotel deleted successfully');
     }
+
+    protected function validateHotel(Request $request): array
+    {
+        return $request->validate([
+            'name' => 'required|string|max:255',
+            'status' => 'required|in:active,inactive',
+            'description' => 'nullable|string',
+            'phone' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'location_url' => 'nullable|url|max:255',
+            'location_ordering' => 'nullable|integer',
+            'website' => 'nullable|url|max:255',
+        ]);
+    }
 }

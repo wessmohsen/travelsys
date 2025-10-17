@@ -63,6 +63,18 @@ Route::middleware(['auth'])->group(function () {
         'agencies' => AgencyController::class,
         'trip-programs' => TripProgramController::class,
     ]);
+
+    Route::delete('trip-programs/families/{family}', [TripProgramController::class, 'destroyFamily'])
+        ->name('trip-programs.families.destroy');
+    Route::delete('program-families/{id}/delete', [TripProgramController::class, 'destroyFamily'])->name('program-families.destroy');
+    Route::delete('trip-programs/{program}/families/{family}', [TripProgramController::class, 'deleteFamily'])->name('trip-programs.families.delete');
+    Route::delete('trip-programs/delete-family/{id}', [TripProgramController::class, 'deleteProgramFamily'])->name('trip-programs.delete-family');
+    Route::post('ajax/delete-family/{id}', [TripProgramController::class, 'ajaxDeleteFamily'])->name('ajax.delete-family');
+    Route::delete('ajax/program-family/{family}', [TripProgramController::class, 'ajaxDeleteProgramFamily'])->name('ajax.program-family.delete');
+    Route::delete('program-families/{id}', [TripProgramController::class, 'deleteProgramFamily'])->name('program-families.delete');
+    Route::post('delete-program-family/{id}', [TripProgramController::class, 'deleteProgramFamily'])
+        ->name('delete-program-family');
+    Route::resource('trip-programs', TripProgramController::class);
 });
 
 

@@ -46,130 +46,74 @@
     <h3>Section 2: Families / Groups</h3>
 
     <div style="margin-bottom:10px">
-        <button type="button" class="btn" id="add-family-row">+ Add Family/Group</button>
+        <button type="button" class="btn btn-primary" id="add-family-row">+ Add Family/Group</button>
     </div>
 
-    <table id="families-table">
+    <table id="families-table" class="table table-bordered">
         <thead>
-        <tr>
-            <th style="min-width:180px">Customer (AJAX) or Group Name</th>
-            <th>Agency</th> <!-- Added -->
-            <th>A</th>
-            <th>C</th>
-            <th>I</th>
-            <th>Hotel</th>
-            <th>Room</th>
-            <th>Pickup</th>
-            <th>Activity</th>
-            <th>Size</th>
-            <th>Nationality</th>
-            <th>Boat Master</th>
-            <th>Guide Name</th>
-            <th>Transfer Name</th>
-            <th>Transfer Phone</th>
-            <th>EGP</th>
-            <th>USD</th>
-            <th>EUR</th>
-            <th>Remarks</th>
-            <th></th>
-        </tr>
+            <tr>
+                <th>Customer / Group Name</th>
+                <th>Adults</th>
+                <th>Children</th>
+                <th>Infants</th>
+                <th>Actions</th>
+            </tr>
         </thead>
         <tbody>
-        @php
-            $rows = old('families', isset($program) ? $program->families->toArray() : []);
-        @endphp
+            @php
+                $rows = old('families', isset($program) ? $program->families->toArray() : []);
+            @endphp
 
-        @forelse($rows as $i => $fam)
-            @include('trip_programs._family_row', [
-                'i' => $i,
-                'fam' => $fam,
-                'hotels' => $hotels,
-                'boats' => $boats,
-                'agencies' => $agencies,
-                'guides' => $guides // Pass guides to the partial
-            ])
-        @empty
-            @include('trip_programs._family_row', [
-                'i' => 0,
-                'fam' => [],
-                'hotels' => $hotels,
-                'boats' => $boats,
-                'agencies' => $agencies,
-                'guides' => $guides // Pass guides to the partial
-            ])
-        @endforelse
+            @forelse($rows as $i => $fam)
+                @include('trip_programs._family_row', ['i' => $i, 'fam' => $fam])
+            @empty
+                @include('trip_programs._family_row', ['i' => 0, 'fam' => []])
+            @endforelse
         </tbody>
     </table>
 </div>
 
 @push('scripts')
 <script>
-// IMPORTANT: Use jQuery (not $)
-jQuery(function(jQuery){
-    let rowIndex = jQuery('#families-table tbody tr').length ? (jQuery('#families-table tbody tr').length - 1) : 0;
+jQuery(function($) {
+    let rowIndex = $('#families-table tbody tr').length;
 
-    jQuery('#add-family-row').on('click', function(){
+    // Handle Add Family/Group button click
+    $('#add-family-row').on('click', function() {
         rowIndex++;
-        jQuery.get("{{ route('trip-programs.create') }}", {partial:'family_row', i:rowIndex}, function(html){
-            // We’ll build client-side to avoid extra HTTP: duplicate last row template and replace indexes
-            let $last = jQuery('#families-table tbody tr:last');
-            let $clone = $last.clone();
+        const newRow = `
+            <tr>
+                <td>
+                    <input type="text" name="families[${rowIndex}][group_name]" class="form-control" placeholder="Group Name">
+                </td>
+                <td>
+                    <input type="number" name="families[${rowIndex}][adults]" class="form-control" min="0" placeholder="Adults">
+                </td>
+                <td>
+                    <input type="number" name="families[${rowIndex}][children]" class="form-control" min="0" placeholder="Children">
+                </td>
+                <td>
+                    <input type="number" name="families[${rowIndex}][infants]" class="form-control" min="0" placeholder="Infants">
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger remove-row">X</button>
+                </td>
+            </tr>
+        `;
 
-            // Clear inputs in cloned row
-            $clone.find('input, select, textarea').each(function(){
-                let name = jQuery(this).attr('name');
-                if (name) {
-                    name = name.replace(/\[\d+\]/, '['+rowIndex+']');
-                    jQuery(this).attr('name', name);
-                }
-                if (jQuery(this).is('select')) {
-                    jQuery(this).val('');
-                } else {
-                    jQuery(this).val('');
-                }
-            });
-
-            jQuery('#families-table tbody').append($clone);
-
-            // Re-init select2 on new selects
-            jQuery('.customer-select').select2({
-                width: '180px',
-                placeholder: 'Search customer…',
-                ajax: {
-                    delay: 250,
-                    url: '/api/customers/search',
-                    data: function(params){ return { q: params.term }; },
-                    processResults: function(data){
-                        // data should be: [{id:1,text:"John"}, ...]
-                        return { results: data };
-                    }
-                },
-                allowClear: true
-            });
-        });
+        $('#families-table tbody').append(newRow);
     });
 
-    // remove row
-    jQuery(document).on('click','.remove-row', function(){
-        if (jQuery('#families-table tbody tr').length > 1) {
-            jQuery(this).closest('tr').remove();
+    // Handle Remove Row button click
+    $(document).on('click', '.remove-row', function() {
+        const $row = $(this).closest('tr');
+        if ($('#families-table tbody tr').length > 1) {
+            $row.remove();
         } else {
-            alert('At least one row required.');
+            alert('At least one row is required.');
         }
-    });
-
-    // init select2 on first render
-    jQuery('.customer-select').select2({
-        width: '180px',
-        placeholder: 'Search customer…',
-        ajax: {
-            delay: 250,
-            url: '/api/customers/search',
-            data: function(params){ return { q: params.term }; },
-            processResults: function(data){ return { results: data }; }
-        },
-        allowClear: true
     });
 });
 </script>
 @endpush
+

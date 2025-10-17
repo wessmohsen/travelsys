@@ -39,11 +39,9 @@
             <tr>
                 <th>Date</th>
                 <th>Trip</th>
-                <th>Guide</th>
-                <th>Company</th>
-                <th>Totals (A/C/I)</th>
-                <th>Total Amount</th>
+                <th>Organizer</th>
                 <th>Status</th>
+                <th>Remarks</th>
                 <th style="width:220px">Actions</th>
             </tr>
         </thead>
@@ -52,11 +50,9 @@
                 <tr>
                     <td>{{ $p->date->format('Y-m-d') }}</td>
                     <td>{{ $p->trip->name ?? '-' }}</td>
-                    <td>{{ $p->guide->name ?? '-' }}</td>
-                    <td>{{ $p->company->name ?? '-' }}</td>
-                    <td>{{ $p->total_adults }}/{{ $p->total_children }}/{{ $p->total_infants }}</td>
-                    <td>{{ number_format($p->total_amount, 2) }}</td>
+                    <td>{{ $p->organizer->name ?? '-' }}</td>
                     <td>{{ ucfirst($p->status) }}</td>
+                    <td>{{ $p->remarks ?? '-' }}</td>
                     <td class="actions">
                         <a class="btn btn-primary" href="{{ route('trip-programs.show',$p) }}">View</a>
                         <a class="btn" href="{{ route('trip-programs.edit',$p) }}">Edit</a>
@@ -67,7 +63,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="9">No programs found.</td></tr>
+                <tr><td colspan="6">No programs found.</td></tr>
             @endforelse
         </tbody>
     </table>

@@ -1,7 +1,7 @@
 @php
     $prefix = "families[$i]";
 @endphp
-<tr>
+<tr data-id="{{ $fam['id'] ?? '' }}">
     <td>
         <select class="customer-select" name="{{ $prefix }}[customer_id]">
             @if(!empty($fam['customer_id']))
@@ -58,5 +58,12 @@
     <td><input type="number" step="0.01" min="0" name="{{ $prefix }}[collect_usd]" value="{{ $fam['collect_usd'] ?? '' }}" style="width:100px"></td>
     <td><input type="number" step="0.01" min="0" name="{{ $prefix }}[collect_eur]" value="{{ $fam['collect_eur'] ?? '' }}" style="width:100px"></td>
     <td><input type="text" name="{{ $prefix }}[remarks]" value="{{ $fam['remarks'] ?? '' }}" style="width:140px"></td>
-    <td><button type="button" class="btn btn-danger remove-row">X</button></td>
+    <td>
+        <button type="button"
+            class="btn btn-danger delete-family"
+            data-id="{{ $fam['id'] ?? '' }}">
+            X
+        </button>
+    </td>
+</tr>
 </tr>
