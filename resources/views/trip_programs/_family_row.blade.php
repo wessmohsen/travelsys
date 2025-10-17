@@ -64,10 +64,27 @@
             @endforeach
         </select>
     </td>
-    <td><input type="text" name="{{ $prefix }}[transfer_name]" value="{{ $fam['transfer_name'] ?? '' }}"
-            style="width:120px"></td>
-    <td><input type="text" name="{{ $prefix }}[transfer_phone]" value="{{ $fam['transfer_phone'] ?? '' }}"
-            style="width:120px"></td>
+    <td>
+        <select name="{{ $prefix }}[transfer_contract_id]" style="min-width:150px">
+            <option value="">-- Select Contract --</option>
+            @foreach($transferContracts as $contract)
+                <option value="{{ $contract->id }}" @selected(($fam['transfer_contract_id'] ?? null) == $contract->id)>
+                    @if($contract->driver)
+                        {{ $contract->driver->name }}
+                        @if($contract->contract_type === 'company' && $contract->company_name)
+                            | {{ $contract->company_name }}
+                        @endif
+                        | {{ $contract->driver->phone }}
+                        @if($contract->driver->alternative_phone)
+                            | {{ $contract->driver->alternative_phone }}
+                        @endif
+                    @else
+                        {{ $contract->company_name ?? 'No Driver' }} ({{ $contract->from }} → {{ $contract->to }})
+                    @endif
+                </option>
+            @endforeach
+        </select>
+    </td>
     <td><input type="number" step="0.01" min="0" name="{{ $prefix }}[collect_egp]"
             value="{{ $fam['collect_egp'] ?? '' }}" style="width:100px"></td>
     <td><input type="number" step="0.01" min="0" name="{{ $prefix }}[collect_usd]"

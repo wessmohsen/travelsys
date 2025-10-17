@@ -17,6 +17,7 @@ class ProgramFamily extends Model
         'vehicle_id',
         'boat_id',
         'guide_id',
+        'transfer_contract_id',
         'adults',
         'children',
         'infants',
@@ -30,8 +31,6 @@ class ProgramFamily extends Model
         'size',
         'nationality',
         'boat_master',
-        'transfer_name',
-        'transfer_phone',
         'remarks',
     ];
 
@@ -95,5 +94,13 @@ class ProgramFamily extends Model
     public function hotel()
     {
         return $this->belongsTo(Hotel::class);
+    }
+
+    /**
+     * Relation to the TransferContract model.
+     */
+    public function transferContract()
+    {
+        return $this->belongsTo(TransferContract::class);
     }
 }

@@ -50,8 +50,7 @@
                 <th>Nationality</th>
                 <th>Boat Master</th>
                 <th>Guide Name</th>
-                <th>Transfer Name</th>
-                <th>Transfer Phone</th>
+                <th>Transfer Contract</th>
                 <th>EGP</th>
                 <th>USD</th>
                 <th>EUR</th>
@@ -76,8 +75,22 @@
                 <td>{{ $fam->nationality }}</td>
                 <td>{{ $fam->boat_master }}</td>
                 <td>{{ $fam->guide_name }}</td>
-                <td>{{ $fam->transfer_name }}</td>
-                <td>{{ $fam->transfer_phone }}</td>
+                <td>
+                    @if($fam->transferContract && $fam->transferContract->driver)
+                        {{ $fam->transferContract->driver->name }}
+                        @if($fam->transferContract->contract_type === 'company' && $fam->transferContract->company_name)
+                            | {{ $fam->transferContract->company_name }}
+                        @endif
+                        | {{ $fam->transferContract->driver->phone }}
+                        @if($fam->transferContract->driver->alternative_phone)
+                            | {{ $fam->transferContract->driver->alternative_phone }}
+                        @endif
+                    @elseif($fam->transferContract)
+                        {{ $fam->transferContract->company_name ?? 'No Driver' }} ({{ $fam->transferContract->from }} → {{ $fam->transferContract->to }})
+                    @else
+                        -
+                    @endif
+                </td>
                 <td>{{ $fam->collect_egp !== null ? number_format($fam->collect_egp,2) : '' }}</td>
                 <td>{{ $fam->collect_usd !== null ? number_format($fam->collect_usd,2) : '' }}</td>
                 <td>{{ $fam->collect_eur !== null ? number_format($fam->collect_eur,2) : '' }}</td>

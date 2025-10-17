@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{TripProgram, ProgramFamily, Trip, Customer, Hotel, User, Boat, Agency, Guide};
+use App\Models\{TripProgram, ProgramFamily, Trip, Customer, Hotel, User, Boat, Agency, Guide, TransferContract};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -47,6 +47,7 @@ class TripProgramController extends Controller
             'boats' => Boat::orderBy('name')->get(['id', 'name']), // Pass boats for the dropdown
             'agencies' => Agency::orderBy('name')->get(['id', 'name']), // Pass agencies for the dropdown
             'guides' => Guide::orderBy('name')->get(['id', 'name']), // Pass guides for the dropdown
+            'transferContracts' => TransferContract::where('status', 'active')->with('driver')->orderBy('company_name')->get(['id', 'company_name', 'from', 'to', 'contract_type', 'driver_id']), // Pass active transfer contracts with driver details
         ]);
     }
 
@@ -105,7 +106,8 @@ class TripProgramController extends Controller
         $tripProgram->load([
             'trip', // Removed 'vehicle'
             'families.customer',
-            'families.hotel'
+            'families.hotel',
+            'families.transferContract'
         ]);
 
         // Simple export toggles (placeholder)
@@ -135,6 +137,7 @@ class TripProgramController extends Controller
             'boats' => Boat::orderBy('name')->get(['id', 'name']), // Pass boats for the dropdown
             'agencies' => Agency::orderBy('name')->get(['id', 'name']), // Pass agencies for the dropdown
             'guides' => Guide::orderBy('name')->get(['id', 'name']), // Pass guides for the dropdown
+            'transferContracts' => TransferContract::where('status', 'active')->with('driver')->orderBy('company_name')->get(['id', 'company_name', 'from', 'to', 'contract_type', 'driver_id']), // Pass active transfer contracts with driver details
         ]);
     }
 
