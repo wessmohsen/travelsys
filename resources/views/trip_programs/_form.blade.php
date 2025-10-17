@@ -186,8 +186,9 @@
                             <td><input type="number" step="0.01" min="0" name="families[${rowIndex}][collect_usd]" value="" style="width:100px"></td>
                             <td><input type="number" step="0.01" min="0" name="families[${rowIndex}][collect_eur]" value="" style="width:100px"></td>
                             <td><input type="text" name="families[${rowIndex}][remarks]" value="" style="width:140px"></td>
-                            <td>
-                                <button type="button" class="btn btn-danger remove-row" data-id="">X</button>
+                            <td style="white-space: nowrap;">
+                                <button type="button" class="btn btn-info btn-sm duplicate-row" title="Duplicate">⎘</button>
+                                <button type="button" class="btn btn-danger btn-sm remove-row" data-id="" title="Delete">X</button>
                             </td>
                         </tr>`;
                     jQuery('#families-table tbody').append(newRow);
@@ -221,6 +222,50 @@
                     } else {
                         alert('At least one row is required.');
                     }
+                });
+
+                // Handle Duplicate Row button click
+                jQuery(document).on('click', '.duplicate-row', function () {
+                    var $sourceRow = jQuery(this).closest('tr');
+                    rowIndex++;
+
+                    // Clone the row
+                    var $newRow = $sourceRow.clone();
+
+                    // Update all name attributes with new index
+                    $newRow.find('[name]').each(function() {
+                        var oldName = jQuery(this).attr('name');
+                        if (oldName) {
+                            // Replace families[X] with families[rowIndex]
+                            var newName = oldName.replace(/families\[\d+\]/, 'families[' + rowIndex + ']');
+                            jQuery(this).attr('name', newName);
+                        }
+                    });
+
+                    // Clear the ID (don't duplicate database ID)
+                    $newRow.find('input[name*="[id]"]').val('');
+                    $newRow.attr('data-id', '');
+                    $newRow.find('.remove-row').attr('data-id', '');
+
+                    // Update customer tags container and suggestions data-index
+                    $newRow.find('.customer-tags-container').attr('data-index', rowIndex);
+                    $newRow.find('.customer-search-input').attr('data-index', rowIndex);
+                    $newRow.find('.customer-suggestions').attr('data-index', rowIndex);
+
+                    // Clear the customer search input value but keep the tags
+                    $newRow.find('.customer-search-input').val('');
+
+                    // Hide suggestions dropdown
+                    $newRow.find('.customer-suggestions').hide().empty();
+
+                    // Insert the new row after the source row
+                    $newRow.insertAfter($sourceRow);
+
+                    // Apply current customer column visibility to new row
+                    toggleColumns(checkbox.checked);
+
+                    // Clean up trailing pipes
+                    cleanTrailingPipes();
                 });
 
                 // Clean up trailing "|" in transfer contract dropdowns

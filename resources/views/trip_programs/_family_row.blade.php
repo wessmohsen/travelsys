@@ -125,8 +125,11 @@
     <td><input type="number" step="0.01" min="0" name="{{ $prefix }}[collect_eur]"
             value="{{ $fam['collect_eur'] ?? '' }}" style="width:100px"></td>
     <td><input type="text" name="{{ $prefix }}[remarks]" value="{{ $fam['remarks'] ?? '' }}" style="width:140px"></td>
-    <td>
-        <button type="button" class="btn btn-danger remove-row" data-id="{{ $fam['id'] ?? '' }}">
+    <td style="white-space: nowrap;">
+        <button type="button" class="btn btn-info btn-sm duplicate-row" title="Duplicate">
+            ⎘
+        </button>
+        <button type="button" class="btn btn-danger btn-sm remove-row" data-id="{{ $fam['id'] ?? '' }}" title="Delete">
             X
         </button>
     </td>
