@@ -100,11 +100,13 @@ class CustomerController extends Controller
         $results = $customers->map(function ($customer) {
             return [
                 'id' => $customer->id,
-                'text' => $customer->name, // accessor
+                'name' => $customer->name, // accessor
+                'text' => $customer->name, // for backward compatibility with Select2
             ];
         });
 
-        return response()->json(['results' => $results]);
+        // Return both formats for compatibility
+        return response()->json($results);
     }
 
     public function deleteSubCustomers($customerId)

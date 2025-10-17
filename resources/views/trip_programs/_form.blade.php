@@ -59,7 +59,7 @@
             <thead>
                 <tr>
                     <th>Customer / Group Name</th>
-                    <th>Agency</th>
+                    <th>Company</th>
                     <th>Adults</th>
                     <th>Children</th>
                     <th>Infants</th>
@@ -118,11 +118,16 @@
                     var newRow = `
                         <tr data-id="">
                             <input type="hidden" name="families[${rowIndex}][id]" value="">
-                            <td>
-                                <select class="customer-select" name="families[${rowIndex}][customer_id]">
-                                </select>
-                                <div class="muted" style="font-size:12px">or</div>
-                                <input type="text" name="families[${rowIndex}][group_name]" placeholder="Group name (e.g., MASTER / ETS)">
+                            <td style="position: relative;">
+                                <div class="customer-tags-container" data-index="${rowIndex}" style="min-height: 40px; border: 1px solid #ddd; border-radius: 4px; padding: 5px; background: white; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
+                                    <input type="text"
+                                           class="customer-search-input"
+                                           data-index="${rowIndex}"
+                                           placeholder="Type to add..."
+                                           autocomplete="off"
+                                           style="border: none; outline: none; flex: 1; min-width: 150px; padding: 5px;">
+                                </div>
+                                <div class="customer-suggestions" data-index="${rowIndex}" style="display:none; position:absolute; background:white; border:1px solid #ddd; max-height:200px; overflow-y:auto; z-index:1000; width:100%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
                             </td>
                             <td>
                                 <select name="families[${rowIndex}][agency_id]" style="min-width:150px">
@@ -213,6 +218,118 @@
                 // Run after adding new rows
                 jQuery('#add-family-row').on('click', function() {
                     setTimeout(cleanTrailingPipes, 100);
+                });
+
+                // AJAX Customer Search - Multi-select with tags
+                var searchTimeout;
+
+                // Add customer/group tag
+                function addCustomerTag(index, name, customerId) {
+                    var $container = jQuery('.customer-tags-container[data-index="' + index + '"]');
+                    var $input = $container.find('.customer-search-input');
+
+                    // Create tag element
+                    var prefix = 'families[' + index + ']';
+                    var value = customerId ? 'customer:' + customerId : 'group:' + name;
+
+                    var $tag = jQuery('<span>')
+                        .addClass('customer-tag')
+                        .css({
+                            background: '#e0e0e0',
+                            padding: '3px 8px',
+                            borderRadius: '3px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                        })
+                        .html(`
+                            <span>${name}</span>
+                            <button type="button" class="remove-tag" style="background: none; border: none; cursor: pointer; font-weight: bold; color: #666;">&times;</button>
+                            <input type="hidden" name="${prefix}[customers][]" value="${value}">
+                        `);
+
+                    // Insert tag before input
+                    $tag.insertBefore($input);
+                    $input.val('');
+                }
+
+                jQuery(document).on('input', '.customer-search-input', function() {
+                    var $input = jQuery(this);
+                    var query = $input.val().trim();
+                    var index = $input.data('index');
+                    var $suggestions = jQuery('.customer-suggestions[data-index="' + index + '"]');
+
+                    clearTimeout(searchTimeout);
+
+                    if (query.length < 2) {
+                        $suggestions.hide().empty();
+                        return;
+                    }
+
+                    searchTimeout = setTimeout(function() {
+                        jQuery.ajax({
+                            url: '/api/customers/search',
+                            method: 'GET',
+                            data: { q: query },
+                            success: function(data) {
+                                $suggestions.empty();
+                                if (data.length > 0) {
+                                    data.forEach(function(customer) {
+                                        var $item = jQuery('<div>')
+                                            .css({
+                                                padding: '8px 12px',
+                                                cursor: 'pointer',
+                                                borderBottom: '1px solid #eee'
+                                            })
+                                            .text(customer.name)
+                                            .hover(
+                                                function() { jQuery(this).css('background', '#f0f0f0'); },
+                                                function() { jQuery(this).css('background', 'white'); }
+                                            )
+                                            .on('click', function() {
+                                                addCustomerTag(index, customer.name, customer.id);
+                                                $suggestions.hide();
+                                            });
+                                        $suggestions.append($item);
+                                    });
+                                    $suggestions.show();
+                                } else {
+                                    $suggestions.hide();
+                                }
+                            },
+                            error: function() {
+                                console.error('Failed to search customers');
+                            }
+                        });
+                    }, 300);
+                });
+
+                // Handle Enter key to add group name
+                jQuery(document).on('keydown', '.customer-search-input', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        var $input = jQuery(this);
+                        var query = $input.val().trim();
+                        var index = $input.data('index');
+                        var $suggestions = jQuery('.customer-suggestions[data-index="' + index + '"]');
+
+                        if (query) {
+                            addCustomerTag(index, query, null);
+                            $suggestions.hide();
+                        }
+                    }
+                });
+
+                // Remove tag
+                jQuery(document).on('click', '.remove-tag', function() {
+                    jQuery(this).closest('.customer-tag').remove();
+                });
+
+                // Hide suggestions when clicking outside
+                jQuery(document).on('click', function(e) {
+                    if (!jQuery(e.target).closest('.customer-search-input, .customer-suggestions, .customer-tags-container').length) {
+                        jQuery('.customer-suggestions').hide();
+                    }
                 });
 
             });

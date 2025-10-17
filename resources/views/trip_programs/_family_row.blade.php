@@ -3,15 +3,32 @@
 @endphp
 <tr data-id="{{ $fam['id'] ?? '' }}">
     <input type="hidden" name="families[{{ $i }}][id]" value="{{ $fam['id'] ?? '' }}">
-    <td>
-        <select class="customer-select" name="{{ $prefix }}[customer_id]">
-            @if(!empty($fam['customer_id']))
-                <option value="{{ $fam['customer_id'] }}" selected>[Selected Customer #{{ $fam['customer_id'] }}]</option>
-            @endif
-        </select>
-        <div class="muted" style="font-size:12px">or</div>
-        <input type="text" name="{{ $prefix }}[group_name]" placeholder="Group name (e.g., MASTER / ETS)"
-            value="{{ $fam['group_name'] ?? '' }}">
+    <td style="position: relative;">
+        <div class="customer-tags-container" data-index="{{ $i }}" style="min-height: 40px; border: 1px solid #ddd; border-radius: 4px; padding: 5px; background: white; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
+            @php
+                $existingCustomers = [];
+                if (!empty($fam['customer_id'])) {
+                    $existingCustomers[] = ['id' => $fam['customer_id'], 'name' => $fam['customer']['name'] ?? 'Customer #' . $fam['customer_id']];
+                }
+                if (!empty($fam['group_name'])) {
+                    $existingCustomers[] = ['id' => '', 'name' => $fam['group_name']];
+                }
+            @endphp
+            @foreach($existingCustomers as $cust)
+                <span class="customer-tag" style="background: #e0e0e0; padding: 3px 8px; border-radius: 3px; display: inline-flex; align-items: center; gap: 5px;">
+                    <span>{{ $cust['name'] }}</span>
+                    <button type="button" class="remove-tag" style="background: none; border: none; cursor: pointer; font-weight: bold; color: #666;">&times;</button>
+                    <input type="hidden" name="{{ $prefix }}[customers][]" value="{{ $cust['id'] ? 'customer:' . $cust['id'] : 'group:' . $cust['name'] }}">
+                </span>
+            @endforeach
+            <input type="text"
+                   class="customer-search-input"
+                   data-index="{{ $i }}"
+                   placeholder="Type to add..."
+                   autocomplete="off"
+                   style="border: none; outline: none; flex: 1; min-width: 150px; padding: 5px;">
+        </div>
+        <div class="customer-suggestions" data-index="{{ $i }}" style="display:none; position:absolute; background:white; border:1px solid #ddd; max-height:200px; overflow-y:auto; z-index:1000; width:100%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
     </td>
     <td>
         <select name="{{ $prefix }}[agency_id]" style="min-width:150px">
