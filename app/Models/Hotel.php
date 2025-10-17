@@ -22,4 +22,9 @@ class Hotel extends Model
     protected $casts = [
         'location_ordering' => 'integer'
     ];
+
+    protected $attributes = [
+        'location_ordering' => 0,
+        'status' => 'active'
+    ];
 }

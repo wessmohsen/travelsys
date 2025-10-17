@@ -24,7 +24,14 @@ class HotelController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        Hotel::create($request->all());
+        $data = $request->all();
+
+        // Set default value for location_ordering if not provided or null
+        if (!isset($data['location_ordering']) || $data['location_ordering'] === null || $data['location_ordering'] === '') {
+            $data['location_ordering'] = 0;
+        }
+
+        Hotel::create($data);
 
         return redirect()->route('hotels.index')->with('success','Hotel created successfully');
     }
@@ -40,7 +47,14 @@ class HotelController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        $hotel->update($request->all());
+        $data = $request->all();
+
+        // Set default value for location_ordering if not provided or null
+        if (!isset($data['location_ordering']) || $data['location_ordering'] === null || $data['location_ordering'] === '') {
+            $data['location_ordering'] = 0;
+        }
+
+        $hotel->update($data);
 
         return redirect()->route('hotels.index')->with('success','Hotel updated successfully');
     }

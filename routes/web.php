@@ -16,6 +16,7 @@ use App\Http\Controllers\GuideController;
 use App\Http\Controllers\TransferContractController;
 use App\Http\Controllers\AgencyController;
 use App\Http\Controllers\TripProgramController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -27,6 +28,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Profile
+    Route::get('/profile', [UserController::class, 'profile'])->name('profile');
+    Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
 
     // Reports
     Route::get('/reports/bookings', [BookingReportController::class, 'index'])->name('reports.bookings');
@@ -50,6 +55,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Resource routes (CRUD)
     Route::resources([
+        'users' => UserController::class,
         'hotels' => HotelController::class,
         'trips' => TripController::class,
         'customers' => CustomerController::class,

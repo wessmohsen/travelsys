@@ -27,15 +27,16 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        $this->call(UserSeeder::class);
         Customer::factory(20)->create();
         $this->call(TripSeeder::class);
         Booking::factory(20)->create();
-        Hotel::factory(5)->create();
+        $this->call(HotelSeeder::class);
         Boat::factory(3)->create();
-        Driver::factory(5)->create();
+        $this->call(DriverSeeder::class);
         Vehicle::factory(5)->create();
         DivingCourse::factory(5)->create();
-        Guide::factory(5)->create();
+        $this->call(GuideSeeder::class);
         $this->call(AgencySeeder::class);
         $this->call(TransferContractSeeder::class);
         // $this->call(AdminUserSeeder::class);

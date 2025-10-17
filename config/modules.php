@@ -23,7 +23,28 @@ return [
     ['name' => 'Agencies', 'route' => 'agencies.index', 'icon' => 'fas fa-building'],
     ['name' => 'Operation Programs', 'route' => 'trip-programs.index', 'icon' => 'fa-solid fa-layer-group'],
 
+
     // Reports
-    ['name' => 'Booking Reports', 'route' => 'reports.bookings', 'icon' => 'fas fa-chart-line'],
-    ['name' => 'Customer Reports', 'route' => 'reports.customers', 'icon' => 'fas fa-user-chart'],
+    [
+        'name' => 'System Reports',
+        'icon' => 'fas fa-chart-line',
+        'children' => [
+            ['name' => 'Booking Reports', 'route' => 'reports.bookings', 'icon' => 'fas fa-tags'],
+        ]
+    ],
+
+
+    //users
+    [
+        'name' => 'User Management',
+        'icon' => 'fas fa-users-cog',
+        'children' => [
+            ['name' => 'Users', 'route' => 'users.index', 'icon' => 'fas fa-user-friends' ],
+            // ['name' => 'Roles', 'route' => 'roles.index', 'icon' => 'fas fa-user-tag' ],
+            // ['name' => 'Permissions', 'route' => 'permissions.index', 'icon' => 'fas fa-user-shield' ],
+            // ['name' => 'Profile', 'route' => 'profile.index', 'icon' => 'fas fa-user-circle' ],
+
+        ]
+    ],
+
 ];
