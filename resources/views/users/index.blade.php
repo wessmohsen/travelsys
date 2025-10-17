@@ -14,6 +14,7 @@
                 <th>ID</th>
                 <th>Name</th>
                 <th>Email</th>
+                <th>Roles</th>
                 <th>Created At</th>
                 <th>Actions</th>
             </tr>
@@ -24,6 +25,13 @@
                 <td>{{ $user->id }}</td>
                 <td>{{ $user->name }}</td>
                 <td>{{ $user->email }}</td>
+                <td>
+                    @forelse($user->roles as $role)
+                        <span class="badge bg-primary">{{ $role->name }}</span>
+                    @empty
+                        <span class="text-muted">No roles</span>
+                    @endforelse
+                </td>
                 <td>{{ $user->created_at->format('Y-m-d') }}</td>
                 <td>
                     <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary btn-sm">Edit</a>
@@ -37,7 +45,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="5" class="text-center">No users found</td>
+                <td colspan="6" class="text-center">No users found</td>
             </tr>
             @endforelse
         </tbody>

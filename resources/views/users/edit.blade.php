@@ -54,6 +54,37 @@
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Assign Roles</label>
+                        <div class="card">
+                            <div class="card-body">
+                                @if($roles->isEmpty())
+                                    <p class="text-muted">No roles available. Please create roles first.</p>
+                                @else
+                                    <div class="row">
+                                        @foreach($roles as $role)
+                                            <div class="col-md-4 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="roles[]"
+                                                           value="{{ $role->id }}" id="role{{ $role->id }}"
+                                                           {{ in_array($role->id, old('roles', $userRoles ?? [])) ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="role{{ $role->id }}">
+                                                        {{ $role->name }}
+                                                        @if($role->description)
+                                                            <small class="text-muted d-block">{{ $role->description }}</small>
+                                                        @endif
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mt-3">
                     <button type="submit" class="btn btn-primary">Update User</button>
                     <a href="{{ route('users.index') }}" class="btn btn-secondary">Cancel</a>

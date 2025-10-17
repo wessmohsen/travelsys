@@ -9,7 +9,7 @@
                     <i class="fa fa-user"></i>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a href="#" class="dropdown-item">Profile</a></li>
+                    <li><a href="{{ route('profile') }}" class="dropdown-item">Profile</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">

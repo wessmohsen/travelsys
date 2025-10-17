@@ -40,10 +40,9 @@ return [
         'icon' => 'fas fa-users-cog',
         'children' => [
             ['name' => 'Users', 'route' => 'users.index', 'icon' => 'fas fa-user-friends' ],
-            // ['name' => 'Roles', 'route' => 'roles.index', 'icon' => 'fas fa-user-tag' ],
-            // ['name' => 'Permissions', 'route' => 'permissions.index', 'icon' => 'fas fa-user-shield' ],
-            // ['name' => 'Profile', 'route' => 'profile.index', 'icon' => 'fas fa-user-circle' ],
-
+            ['name' => 'Roles', 'route' => 'roles.index', 'icon' => 'fas fa-user-tag' ],
+            ['name' => 'Permissions', 'route' => 'permissions.index', 'icon' => 'fas fa-user-shield' ],
+            ['name' => 'My Profile', 'route' => 'profile', 'icon' => 'fas fa-user-circle' ],
         ]
     ],
 

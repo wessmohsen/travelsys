@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -12,13 +13,14 @@ class UserController extends Controller
 {
     public function index()
     {
-        $items = User::latest()->paginate(10);
+        $items = User::with('roles')->latest()->paginate(10);
         return view('users.index', compact('items'));
     }
 
     public function create()
     {
-        return view('users.create');
+        $roles = Role::all();
+        return view('users.create', compact('roles'));
     }
 
     public function store(Request $request)
@@ -27,20 +29,28 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Password::min(8)],
+            'roles' => 'nullable|array',
+            'roles.*' => 'exists:roles,id',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        if ($request->has('roles')) {
+            $user->roles()->sync($request->roles);
+        }
 
         return redirect()->route('users.index')->with('success', 'User created successfully');
     }
 
     public function edit(User $user)
     {
-        return view('users.edit', ['item' => $user]);
+        $roles = Role::all();
+        $userRoles = $user->roles->pluck('id')->toArray();
+        return view('users.edit', compact('user', 'roles', 'userRoles'))->with('item', $user);
     }
 
     public function update(Request $request, User $user)
@@ -49,6 +59,8 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => ['nullable', 'confirmed', Password::min(8)],
+            'roles' => 'nullable|array',
+            'roles.*' => 'exists:roles,id',
         ]);
 
         $data = [
@@ -61,6 +73,7 @@ class UserController extends Controller
         }
 
         $user->update($data);
+        $user->roles()->sync($request->roles ?? []);
 
         return redirect()->route('users.index')->with('success', 'User updated successfully');
     }

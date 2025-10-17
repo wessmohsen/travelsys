@@ -17,6 +17,8 @@ use App\Http\Controllers\TransferContractController;
 use App\Http\Controllers\AgencyController;
 use App\Http\Controllers\TripProgramController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\PermissionController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -56,6 +58,8 @@ Route::middleware(['auth'])->group(function () {
     // Resource routes (CRUD)
     Route::resources([
         'users' => UserController::class,
+        'roles' => RoleController::class,
+        'permissions' => PermissionController::class,
         'hotels' => HotelController::class,
         'trips' => TripController::class,
         'customers' => CustomerController::class,
