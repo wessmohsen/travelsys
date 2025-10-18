@@ -87,6 +87,13 @@ class TripProgramController extends Controller
             $totAmount = 0;
 
             foreach ($validated['families'] ?? [] as $fam) {
+                // Log the family data including ordering
+                \Log::info('Creating family', [
+                    'ordering' => $fam['ordering'] ?? 'NOT SET',
+                    'customer_id' => $fam['customer_id'] ?? null,
+                    'group_name' => $fam['group_name'] ?? null
+                ]);
+
                 // Extract customers array
                 $customerIds = [];
                 $groupNames = [];
@@ -210,6 +217,12 @@ class TripProgramController extends Controller
 
             if (isset($validated['families']) && is_array($validated['families'])) {
                 foreach ($validated['families'] as $familyData) {
+                    // Log the family data including ordering
+                    \Log::info('Updating/Creating family', [
+                        'id' => $familyData['id'] ?? 'NEW',
+                        'ordering' => $familyData['ordering'] ?? 'NOT SET',
+                    ]);
+
                     // Extract customers array
                     $customerIds = [];
                     $groupNames = [];
@@ -347,6 +360,7 @@ class TripProgramController extends Controller
             'remarks' => 'nullable|string',
             'families' => 'array',
             'families.*.id' => 'nullable|integer',
+            'families.*.ordering' => 'nullable|integer|min:0',
             'families.*.customer_id' => 'nullable|exists:customers,id',
             'families.*.group_name' => 'nullable|string',
             'families.*.customers' => 'nullable|array',

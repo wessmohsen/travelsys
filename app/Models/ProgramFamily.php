@@ -11,6 +11,7 @@ class ProgramFamily extends Model
 
     protected $fillable = [
         'trip_program_id',
+        'ordering',
         'customer_id',
         'group_name',
         'agency_id',

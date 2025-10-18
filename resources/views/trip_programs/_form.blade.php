@@ -62,6 +62,7 @@
         <table id="families-table" class="table table-bordered" style="min-width: 100%;">
             <thead>
                 <tr>
+                    <th style="width: 20px; text-align: center;">Order</th>
                     <th class="customer-column">Customer / Group Name</th>
                     <th>Company</th>
                     <th>Adults</th>
@@ -125,6 +126,32 @@
 </div>
 
 @push('scripts')
+    <!-- SortableJS for drag-and-drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        /* Enhanced ordering column styles */
+        .drag-handle:hover {
+            color: #007bff !important;
+        }
+
+        .row-number {
+            transition: color 0.2s ease;
+        }
+
+        tr:hover .row-number {
+            color: #007bff !important;
+        }
+
+        /* Highlight row being dragged */
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #f0f8ff !important;
+        }
+
+        .sortable-drag {
+            opacity: 0.8;
+        }
+    </style>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (typeof jQuery === 'undefined') {
@@ -135,7 +162,60 @@
             jQuery(function () {
                 var rowIndex = jQuery('#families-table tbody tr').length;
 
-                // Get checkbox reference
+                // Initialize SortableJS for drag-and-drop
+                var tbody = document.querySelector('#families-table tbody');
+                var sortable = Sortable.create(tbody, {
+                    handle: '.drag-handle',
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    dragClass: 'sortable-drag',
+                    onEnd: function (evt) {
+                        // Update ordering values after drag
+                        updateOrdering();
+
+                        // Debug: Log the ordering values
+                        console.log('Ordering updated after drag:');
+                        jQuery('#families-table tbody tr').each(function(index) {
+                            var ordering = jQuery(this).find('.ordering-input').val();
+                            var id = jQuery(this).find('input[name*="[id]"]').val();
+                            console.log('Row', index, '- ID:', id, '- Ordering:', ordering);
+                        });
+                    }
+                });
+
+                // Function to update ordering inputs and reindex all form names
+                function updateOrdering() {
+                    jQuery('#families-table tbody tr').each(function(index) {
+                        var $row = jQuery(this);
+
+                        // Update ordering value
+                        $row.find('.ordering-input').val(index);
+
+                        // Update row number display
+                        $row.find('.row-number').text(index + 1);
+
+                        // Update all name attributes to use the new index
+                        $row.find('[name]').each(function() {
+                            var $input = jQuery(this);
+                            var oldName = $input.attr('name');
+                            if (oldName && oldName.startsWith('families[')) {
+                                // Replace families[oldIndex] with families[newIndex]
+                                var newName = oldName.replace(/families\[\d+\]/, 'families[' + index + ']');
+                                $input.attr('name', newName);
+                            }
+                        });
+
+                        // Update data-index attributes for customer search functionality
+                        $row.find('[data-index]').attr('data-index', index);
+
+                        // Disable move up button on first row
+                        // $row.find('.move-up').prop('disabled', index === 0);
+
+                        // Disable move down button on last row
+                        // var totalRows = jQuery('#families-table tbody tr').length;
+                        // $row.find('.move-down').prop('disabled', index === totalRows - 1);
+                    });
+                }                // Get checkbox reference
                 const checkbox = document.getElementById('toggleCustomerColumn');
 
                 // Function to toggle columns - queries DOM each time to include dynamically added rows
@@ -158,7 +238,13 @@
                     rowIndex++;
                     var newRow = `
                         <tr data-id="">
-                            <input type="hidden" name="families[${rowIndex}][id]" value="">
+                            <td class="order-column" style="text-align: center; vertical-align: middle; padding: 0; width: 20px;">
+                                <input type="hidden" name="families[${rowIndex}][id]" value="">
+                                <input type="hidden" class="ordering-input" name="families[${rowIndex}][ordering]" value="${rowIndex}">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <span class="drag-handle" style="cursor: move; font-size: 18px; color: #666; user-select: none;" title="Drag to reorder">☰</span>
+                                </div>
+                            </td>
                             <td class="customer-column" style="position: relative;">
                                 <div class="customer-tags-container" data-index="${rowIndex}" style="min-height: 40px; border: 1px solid #ddd; border-radius: 4px; padding: 5px; background: white; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
                                     <input type="text"
@@ -217,6 +303,9 @@
                     // Apply current customer column visibility to new row
                     toggleColumns(checkbox.checked);
 
+                    // Update ordering after adding new row
+                    updateOrdering();
+
                     // Clean up trailing pipes in the newly added row
                     cleanTrailingPipes();
                 });
@@ -262,7 +351,11 @@
 
                     // Remove visually
                     if (jQuery('#families-table tbody tr').length > 1) {
-                        $row.fadeOut(200, function () { jQuery(this).remove(); });
+                        $row.fadeOut(200, function () {
+                            jQuery(this).remove();
+                            // Update ordering after deletion
+                            updateOrdering();
+                        });
                     } else {
                         alert('At least one row is required.');
                     }
@@ -272,6 +365,28 @@
                 jQuery('#deleteConfirmModal').on('hidden.bs.modal', function() {
                     rowToDelete = null;
                 });
+
+                // Handle Move Up button
+                // jQuery(document).on('click', '.move-up', function() {
+                //     var $row = jQuery(this).closest('tr');
+                //     var $prev = $row.prev('tr');
+
+                //     if ($prev.length) {
+                //         $row.insertBefore($prev);
+                //         updateOrdering();
+                //     }
+                // });
+
+                // Handle Move Down button
+                // jQuery(document).on('click', '.move-down', function() {
+                //     var $row = jQuery(this).closest('tr');
+                //     var $next = $row.next('tr');
+
+                //     if ($next.length) {
+                //         $row.insertAfter($next);
+                //         updateOrdering();
+                //     }
+                // });
 
                 // Handle Duplicate Row button click
                 jQuery(document).on('click', '.duplicate-row', function () {
@@ -296,6 +411,9 @@
                     $newRow.attr('data-id', '');
                     $newRow.find('.remove-row').attr('data-id', '');
 
+                    // Update ordering value
+                    $newRow.find('.ordering-input').val(rowIndex);
+
                     // Update customer tags container and suggestions data-index
                     $newRow.find('.customer-tags-container').attr('data-index', rowIndex);
                     $newRow.find('.customer-search-input').attr('data-index', rowIndex);
@@ -312,6 +430,9 @@
 
                     // Apply current customer column visibility to new row
                     toggleColumns(checkbox.checked);
+
+                    // Update ordering after duplicating
+                    updateOrdering();
 
                     // Clean up trailing pipes
                     cleanTrailingPipes();
@@ -461,6 +582,34 @@
                     toggleColumns(this.checked);
                     // Save preference to localStorage
                     localStorage.setItem('showCustomerColumn', this.checked);
+                });
+
+                // Initialize ordering on page load (set button states)
+                updateOrdering();
+
+                // Before form submit, ensure ordering is up to date and log data
+                jQuery('form').on('submit', function(e) {
+                    // Update ordering one final time before submit
+                    updateOrdering();
+
+                    // Debug: Log all ordering values being submitted
+                    console.log('=== Form Submission - Ordering Values ===');
+                    var formData = [];
+                    jQuery('#families-table tbody tr').each(function(index) {
+                        var ordering = jQuery(this).find('.ordering-input').val();
+                        var id = jQuery(this).find('input[name*="[id]"]').val();
+                        var name = jQuery(this).find('.ordering-input').attr('name');
+                        var rowData = {
+                            index: index,
+                            id: id || 'NEW',
+                            ordering: ordering,
+                            fieldName: name
+                        };
+                        formData.push(rowData);
+                        console.log('Row', index, '- ID:', rowData.id, '- Ordering:', ordering, '- Name:', name);
+                    });
+                    console.table(formData);
+                    console.log('Total families being submitted:', formData.length);
                 });
 
             });

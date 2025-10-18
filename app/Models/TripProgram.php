@@ -46,7 +46,7 @@ class TripProgram extends Model
      */
     public function families()
     {
-        return $this->hasMany(ProgramFamily::class);
+        return $this->hasMany(ProgramFamily::class)->orderBy('ordering');
     }
 
     /**

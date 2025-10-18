@@ -2,7 +2,13 @@
     $prefix = "families[$i]";
 @endphp
 <tr data-id="{{ $fam['id'] ?? '' }}">
-    <input type="hidden" name="families[{{ $i }}][id]" value="{{ $fam['id'] ?? '' }}">
+    <td class="order-column" style="text-align: center; vertical-align: middle; padding: 0; width: 20px;">
+        <input type="hidden" name="families[{{ $i }}][id]" value="{{ $fam['id'] ?? '' }}">
+        <input type="hidden" class="ordering-input" name="families[{{ $i }}][ordering]" value="{{ $fam['ordering'] ?? $i }}">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span class="drag-handle" style="cursor: move; font-size: 18px; color: #666; user-select: none;" title="Drag to reorder">☰</span>
+        </div>
+    </td>
     <td class="customer-column" style="position: relative;">
         <div class="customer-tags-container" data-index="{{ $i }}" style="min-height: 40px; border: 1px solid #ddd; border-radius: 4px; padding: 5px; background: white; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
             @php
