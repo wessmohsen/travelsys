@@ -152,6 +152,7 @@ class TripProgramController extends Controller
         $tripProgram->load([
             'trip',
             'families.hotel',
+            'families.boat',
             'families.transferContract.driver'
         ]);
 

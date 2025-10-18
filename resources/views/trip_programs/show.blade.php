@@ -86,10 +86,17 @@
 @endpush
 
 @section('content')
-<div class="card" style="margin-bottom: 0;">
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <a class="btn" href="{{ route('trip-programs.index') }}" style="background:#f8f9fa;border-color:#ddd">&larr; Back</a>
+<div class="container-fluid">
+    <h1>Daily Report — {{ $tripProgram->date ? $tripProgram->date->format('Y-m-d') : 'N/A' }}</h1>
+    @include('partials.breadcrumbs', ['crumbs' => [
+        ['href' => route('trip-programs.index'), 'text' => 'Trip Programs'],
+        ['text' => 'View Daily Report']
+    ]])
+
+    <div class="card" style="margin-bottom: 0;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <a class="btn" href="{{ route('trip-programs.index') }}" style="background:#f8f9fa;border-color:#ddd">&larr; Back</a>
             <a class="btn" href="{{ route('trip-programs.show', $tripProgram) }}?export=pdf" style="background:#4CAF50;color:white">
                 <i class="fas fa-file-pdf"></i> Export PDF
             </a>
@@ -106,8 +113,7 @@
 </div>
 
 <div class="card" style="margin-top: 16px;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
-        <h3 style="margin:0;font-size:1.5rem">Daily Report — {{ $tripProgram->date ? $tripProgram->date->format('Y-m-d') : 'N/A' }}</h3>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:20px">
         <div style="text-align:right">
             <span class="badge" style="background:{{ $tripProgram->status === 'done' ? '#4CAF50' : ($tripProgram->status === 'confirmed' ? '#2196F3' : '#FFC107') }};color:white;padding:6px 12px;border-radius:4px;font-weight:500">
                 {{ ucfirst($tripProgram->status) }}
@@ -144,7 +150,6 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h3 style="margin: 0;font-size:1.5rem">Families / Groups</h3>
         <div style="display:flex;align-items:center;gap:12px">
-            <span style="color:#666">Layout Style: MARSA MU</span>
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                 <input type="checkbox" id="toggleCustomerColumn" checked style="width:16px;height:16px">
                 <span style="font-size:0.9rem;color:#444">Show Customer Column</span>
@@ -156,7 +161,6 @@
         <table style="border-collapse:separate;border-spacing:0;width:100%;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
             <thead>
                 <tr style="background:#f8f9fa">
-                    <th style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600;text-align:center;width:40px">#</th>
                     <th class="customer-column" style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600">Customer / Group</th>
                     <th style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600">A</th>
                     <th style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600">C</th>
@@ -180,7 +184,6 @@
         <tbody>
         @foreach($tripProgram->families as $idx => $fam)
             <tr>
-                <td>{{ $idx+1 }}</td>
                 <td class="customer-column">
                     @php
                         $displayNames = [];
@@ -216,7 +219,7 @@
                 <td><span class="activity-status {{ strtolower($fam->activity) }}">{{ $fam->activity ?: '-' }}</span></td>
                 <td>{{ $fam->size ?: '-' }}</td>
                 <td>{{ $fam->nationality ?: '-' }}</td>
-                <td>{{ $fam->boat_master ?: '-' }}</td>
+                <td>{{ optional($fam->boat)->name ?? '-' }}</td>
                 <td>{{ $fam->guide->name ?? '-' }}</td>
                 <td>
                     @if($fam->agency)

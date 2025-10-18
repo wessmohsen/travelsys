@@ -86,10 +86,10 @@
     <td><input type="text" name="{{ $prefix }}[nationality]" value="{{ $fam['nationality'] ?? '' }}"
             style="width:120px"></td>
     <td>
-        <select name="{{ $prefix }}[boat_master]" style="width:120px">
+        <select name="{{ $prefix }}[boat_id]" style="width:120px">
             <option value="">-- Select Boat --</option>
             @foreach($boats as $boat)
-                <option value="{{ $boat->id }}" @selected(($fam['boat_master'] ?? null) == $boat->id)>{{ $boat->name }}
+                <option value="{{ $boat->id }}" @selected(($fam['boat_id'] ?? null) == $boat->id)>{{ $boat->name }}
                 </option>
             @endforeach
         </select>
