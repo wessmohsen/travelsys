@@ -297,25 +297,90 @@ class TripProgramController extends Controller
         // Execute query and get results
         $programFamilies = $query->get();
 
-        // Log final results for debugging
-        \Log::info('Final query results:', [
-            'total_found' => $programFamilies->count(),
-            'has_relationships' => $programFamilies->first() ? [
-                'hotel' => $programFamilies->first()->relationLoaded('hotel'),
-                'boat' => $programFamilies->first()->relationLoaded('boat'),
-                'guide' => $programFamilies->first()->relationLoaded('guide'),
-                'agency' => $programFamilies->first()->relationLoaded('agency'),
-                'transfer_contract' => $programFamilies->first()->relationLoaded('transferContract')
-            ] : [],
-            'applied_filters' => $appliedFilters,
-            'sample_data' => $programFamilies->take(1)->map(function($family) {
-                return [
-                    'boat_id' => $family->boat_id,
-                    'hotel_id' => $family->hotel_id,
-                    'agency_id' => $family->agency_id,
-                    'transfer_contract_id' => $family->transfer_contract_id
-                ];
+        // Get all program families for this trip program to build available filter options
+        $allFamilies = ProgramFamily::with([
+            'hotel',
+            'boat',
+            'guide',
+            'agency',
+            'transferContract'
+        ])->where('trip_program_id', $tripProgram->id)->get();
+
+        // Get unique values for each filter from the current results
+        $availableBoats = $programFamilies->pluck('boat.id', 'boat.name')
+            ->filter()
+            ->map(function($id, $name) {
+                return ['id' => $id, 'name' => $name];
+            })->values();
+
+        $availableHotels = $programFamilies->pluck('hotel.id', 'hotel.name')
+            ->filter()
+            ->map(function($id, $name) {
+                return ['id' => $id, 'name' => $name];
+            })->values();
+
+        $availableAgencies = $programFamilies->pluck('agency.id', 'agency.name')
+            ->filter()
+            ->map(function($id, $name) {
+                return ['id' => $id, 'name' => $name];
+            })->values();
+
+        $availableTransferContracts = $programFamilies
+            ->map(function($family) {
+                if ($family->transferContract && $family->transferContract->driver) {
+                    return [
+                        'id' => $family->transferContract->id,
+                        'name' => $family->transferContract->driver->name . ' - ' . $family->transferContract->company_name,
+                        'company_name' => $family->transferContract->company_name,
+                        'driver_name' => $family->transferContract->driver->name
+                    ];
+                }
+                return null;
             })
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        // Get all possible values for dropdowns (from unfiltered results)
+        $allBoats = $allFamilies->pluck('boat.id', 'boat.name')
+            ->filter()
+            ->map(function($id, $name) {
+                return ['id' => $id, 'name' => $name];
+            })->values();
+
+        $allHotels = $allFamilies->pluck('hotel.id', 'hotel.name')
+            ->filter()
+            ->map(function($id, $name) {
+                return ['id' => $id, 'name' => $name];
+            })->values();
+
+        $allAgencies = $allFamilies->pluck('agency.id', 'agency.name')
+            ->filter()
+            ->map(function($id, $name) {
+                return ['id' => $id, 'name' => $name];
+            })->values();
+
+        $allTransferContracts = $allFamilies
+            ->map(function($family) {
+                if ($family->transferContract && $family->transferContract->driver) {
+                    return [
+                        'id' => $family->transferContract->id,
+                        'name' => $family->transferContract->driver->name . ' - ' . $family->transferContract->company_name,
+                        'company_name' => $family->transferContract->company_name,
+                        'driver_name' => $family->transferContract->driver->name
+                    ];
+                }
+                return null;
+            })
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        \Log::info('Available filter options:', [
+            'boats' => $availableBoats->count(),
+            'hotels' => $availableHotels->count(),
+            'agencies' => $availableAgencies->count(),
+            'transfer_contracts' => $availableTransferContracts->count()
         ]);
 
         \Log::info('Final results:', [
@@ -344,14 +409,20 @@ class TripProgramController extends Controller
             return $this->exportToExcel($tripProgram);
         }
 
-        return view('trip_programs.show', compact(
-            'tripProgram',
-            'programFamilies',
-            'boats',
-            'hotels',
-            'agencies',
-            'transferContracts'
-        ));
+        return view('trip_programs.show', [
+            'tripProgram' => $tripProgram,
+            'programFamilies' => $programFamilies,
+            // Available options (filtered)
+            'availableBoats' => $availableBoats,
+            'availableHotels' => $availableHotels,
+            'availableAgencies' => $availableAgencies,
+            'availableTransferContracts' => $availableTransferContracts,
+            // All options
+            'allBoats' => $allBoats,
+            'allHotels' => $allHotels,
+            'allAgencies' => $allAgencies,
+            'allTransferContracts' => $allTransferContracts
+        ]);
     }
 
     /**

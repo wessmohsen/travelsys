@@ -121,6 +121,60 @@
     [title] {
         cursor: help;
     }
+
+    /* Filter select styles */
+    .filter-select option:disabled {
+        color: #999;
+        font-style: italic;
+        background-color: #f8f9fa;
+    }
+
+    .filter-select {
+        min-width: 250px;
+    }
+
+    /* Transfer contract select specific styles */
+    #transfer_contract_id {
+        min-width: 300px;
+    }
+
+    #transfer_contract_id option {
+        padding: 8px;
+        line-height: 1.4;
+    }
+
+    .driver-name {
+        font-weight: 500;
+    }
+
+    .company-name {
+        color: #666;
+        font-size: 0.95em;
+    }
+
+    .filter-group {
+        position: relative;
+    }
+
+    .filter-count {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.8em;
+        color: #666;
+        pointer-events: none;
+    }
+
+    /* Improved select styling */
+    .filter-select {
+        appearance: none;
+        padding-right: 30px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23333' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: calc(100% - 8px) center;
+        background-size: 12px;
+    }
 </style>
 @endpush
 
@@ -203,20 +257,22 @@
             <div class="col-md-3">
                 <div class="form-group">
                     <label for="boat_id">Filter by Boat</label>
-                    <select name="boat_id" id="boat_id" class="form-control filter-select">
+                                        <select name="boat_id" id="boat_id" class="form-control filter-select">
                         <option value="">All Boats</option>
-                        @foreach($boats as $boat)
+                        @foreach($allBoats as $boat)
                             @php
-                                $isSelected = (string)request('boat_id') === (string)$boat->id;
-                                \Log::info('Boat Option:', [
-                                    'boat_id' => $boat->id,
-                                    'boat_name' => $boat->name,
-                                    'requested_id' => request('boat_id'),
-                                    'is_selected' => $isSelected
-                                ]);
+                                $isAvailable = $availableBoats->contains('id', $boat['id']);
+                                $isSelected = request('boat_id') == $boat['id'];
                             @endphp
-                            <option value="{{ $boat->id }}" {{ $isSelected ? 'selected' : '' }}>
-                                {{ $boat->name }}
+                            <option value="{{ $boat['id'] }}"
+                                {{ $isSelected ? 'selected' : '' }}
+                                {{ !$isAvailable && !$isSelected ? 'disabled' : '' }}
+                                class="{{ !$isAvailable && !$isSelected ? 'text-muted' : '' }}"
+                            >
+                                {{ $boat['name'] }}
+                                @if(!$isAvailable && !$isSelected)
+                                    (no results)
+                                @endif
                             </option>
                         @endforeach
                     </select>
@@ -227,9 +283,20 @@
                     <label for="hotel_id">Filter by Hotel</label>
                     <select name="hotel_id" id="hotel_id" class="form-control filter-select">
                         <option value="">All Hotels</option>
-                        @foreach($hotels as $hotel)
-                            <option value="{{ $hotel->id }}" {{ request('hotel_id') == $hotel->id ? 'selected' : '' }}>
-                                {{ $hotel->name }}
+                        @foreach($allHotels as $hotel)
+                            @php
+                                $isAvailable = $availableHotels->contains('id', $hotel['id']);
+                                $isSelected = request('hotel_id') == $hotel['id'];
+                            @endphp
+                            <option value="{{ $hotel['id'] }}"
+                                {{ $isSelected ? 'selected' : '' }}
+                                {{ !$isAvailable && !$isSelected ? 'disabled' : '' }}
+                                class="{{ !$isAvailable && !$isSelected ? 'text-muted' : '' }}"
+                            >
+                                {{ $hotel['name'] }}
+                                @if(!$isAvailable && !$isSelected)
+                                    (no results)
+                                @endif
                             </option>
                         @endforeach
                     </select>
@@ -240,18 +307,20 @@
                     <label for="agency_id">Filter by Agency</label>
                     <select name="agency_id" id="agency_id" class="form-control filter-select">
                         <option value="">All Agencies</option>
-                        @foreach($agencies as $agency)
+                        @foreach($allAgencies as $agency)
                             @php
-                                $isSelected = request('agency_id') == $agency->id;
-                                \Log::info('Agency Option:', [
-                                    'agency_id' => $agency->id,
-                                    'agency_name' => $agency->name,
-                                    'requested_id' => request('agency_id'),
-                                    'is_selected' => $isSelected
-                                ]);
+                                $isAvailable = $availableAgencies->contains('id', $agency['id']);
+                                $isSelected = request('agency_id') == $agency['id'];
                             @endphp
-                            <option value="{{ $agency->id }}" {{ $isSelected ? 'selected' : '' }}>
-                                {{ $agency->name }}
+                            <option value="{{ $agency['id'] }}"
+                                {{ $isSelected ? 'selected' : '' }}
+                                {{ !$isAvailable && !$isSelected ? 'disabled' : '' }}
+                                class="{{ !$isAvailable && !$isSelected ? 'text-muted' : '' }}"
+                            >
+                                {{ $agency['name'] }}
+                                @if(!$isAvailable && !$isSelected)
+                                    (no results)
+                                @endif
                             </option>
                         @endforeach
                     </select>
@@ -260,11 +329,24 @@
             <div class="col-md-3">
                 <div class="form-group">
                     <label for="transfer_contract_id">Filter by Transfer Contract</label>
-                    <select name="transfer_contract_id" id="transfer_contract_id" class="form-control filter-select">
+                                        <select name="transfer_contract_id" id="transfer_contract_id" class="form-control filter-select">
                         <option value="">All Transfer Contracts</option>
-                        @foreach($transferContracts as $contract)
-                            <option value="{{ $contract->id }}" {{ request('transfer_contract_id') == $contract->id ? 'selected' : '' }}>
-                                {{ $contract->company_name }}
+                        @foreach($allTransferContracts as $contract)
+                            @php
+                                $isAvailable = $availableTransferContracts->contains('id', $contract['id']);
+                                $isSelected = request('transfer_contract_id') == $contract['id'];
+                            @endphp
+                            <option value="{{ $contract['id'] }}"
+                                {{ $isSelected ? 'selected' : '' }}
+                                {{ !$isAvailable && !$isSelected ? 'disabled' : '' }}
+                                class="{{ !$isAvailable && !$isSelected ? 'text-muted' : '' }}"
+                                title="Driver: {{ $contract['driver_name'] }}&#13;Company: {{ $contract['company_name'] }}"
+                            >
+                                <span class="driver-name">{{ $contract['driver_name'] }}</span>
+                                <span class="company-name"> - {{ $contract['company_name'] }}</span>
+                                @if(!$isAvailable && !$isSelected)
+                                    (no results)
+                                @endif
                             </option>
                         @endforeach
                     </select>
