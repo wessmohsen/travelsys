@@ -5,8 +5,10 @@
 @section('content')
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
   <div class="card card-outline card-primary" style="width: 400px;">
+                <img src="https://sambodivers.com/wp-content/uploads/2022/04/sambo-logo.png" alt="Sambo System Logo" class="mb-2" style="max-width: 150px; display: block; margin: 10px auto 0 auto;">
+
     <div class="card-header text-center">
-      <a href="{{ url('/') }}" class="h1"><b>Travel</b>Admin</a>
+      <a href="{{ url('/') }}" class="h1"><b>Sambo</b>System</a>
     </div>
     <div class="card-body">
       <p class="login-box-msg">Register a new account</p>
