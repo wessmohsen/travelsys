@@ -93,6 +93,15 @@
                     <h5 class="mb-0">Account Information</h5>
                 </div>
                 <div class="card-body">
+                    <p><strong>Role:</strong><br>
+                        @if($user->roles->isNotEmpty())
+                            @foreach($user->roles as $role)
+                                <span class="badge bg-primary">{{ ucwords(str_replace('-', ' ', $role->name)) }}</span>
+                            @endforeach
+                        @else
+                            <span class="badge bg-secondary">No Role Assigned</span>
+                        @endif
+                    </p>
                     <p><strong>Member Since:</strong><br>{{ $user->created_at->format('F d, Y') }}</p>
                     <p><strong>Last Updated:</strong><br>{{ $user->updated_at->format('F d, Y h:i A') }}</p>
                     <p><strong>User ID:</strong><br>#{{ $user->id }}</p>

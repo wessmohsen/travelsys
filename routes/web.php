@@ -52,19 +52,21 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reports/customers', [BookingReportController::class, 'customers'])->name('reports.customers');
     });
 
-    // Customers - accessible by all authenticated users
-    Route::resource('customers', App\Http\Controllers\CustomerController::class);
-    Route::resource('customers.subcustomers', App\Http\Controllers\SubCustomerController::class);
-    Route::resource('subcustomers', App\Http\Controllers\SubCustomerController::class);
-    Route::delete('customers/{customer}/subcustomers', [CustomerController::class, 'deleteSubCustomers'])->name('customers.subcustomers.delete');
-    Route::get('/api/customers/search', [App\Http\Controllers\CustomerController::class, 'search'])->name('customers.search');
+    // Customers - Admin and Manager only
+    Route::middleware(['role:admin,manager'])->group(function () {
+        Route::resource('customers', App\Http\Controllers\CustomerController::class);
+        Route::resource('customers.subcustomers', App\Http\Controllers\SubCustomerController::class);
+        Route::resource('subcustomers', App\Http\Controllers\SubCustomerController::class);
+        Route::delete('customers/{customer}/subcustomers', [CustomerController::class, 'deleteSubCustomers'])->name('customers.subcustomers.delete');
+        Route::get('/api/customers/search', [App\Http\Controllers\CustomerController::class, 'search'])->name('customers.search');
 
-    // AJAX routes - accessible by all authenticated users
-    Route::get('/ajax/customers', [BookingController::class, 'ajaxCustomers'])->name('ajax.customers');
-    Route::get('/ajax/trips', [BookingController::class, 'ajaxTrips'])->name('ajax.trips');
+        // AJAX routes
+        Route::get('/ajax/customers', [BookingController::class, 'ajaxCustomers'])->name('ajax.customers');
+        Route::get('/ajax/trips', [BookingController::class, 'ajaxTrips'])->name('ajax.trips');
 
-    // Bookings - accessible by all authenticated users
-    Route::resource('bookings', BookingController::class);
+        // Bookings
+        Route::resource('bookings', BookingController::class);
+    });
 
     // Trip Programs - Admin, Manager, and Operation Manager only
     Route::middleware(['role:admin,manager,operation-manager'])->group(function () {

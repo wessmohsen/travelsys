@@ -22,9 +22,9 @@ return [
     ['name' => 'Guides', 'route' => 'guides.index', 'icon' => 'fas fa-user-tie', 'roles' => ['admin', 'manager']],
     ['name' => 'Agencies', 'route' => 'agencies.index', 'icon' => 'fas fa-building', 'roles' => ['admin', 'manager']],
 
-    // Customer Management - All authenticated users
-    ['name' => 'Customers', 'route' => 'customers.index', 'icon' => 'fas fa-users'],
-    ['name' => 'Bookings', 'route' => 'bookings.index', 'icon' => 'fas fa-calendar-check'],
+    // Customer Management - Admin and Manager only
+    ['name' => 'Customers', 'route' => 'customers.index', 'icon' => 'fas fa-users', 'roles' => ['admin', 'manager']],
+    ['name' => 'Bookings', 'route' => 'bookings.index', 'icon' => 'fas fa-calendar-check', 'roles' => ['admin', 'manager']],
 
     // Operation Programs - Admin, Manager, and Operation Manager
     ['name' => 'Operation Programs', 'route' => 'trip-programs.index', 'icon' => 'fa-solid fa-layer-group', 'roles' => ['admin', 'manager', 'operation-manager']],

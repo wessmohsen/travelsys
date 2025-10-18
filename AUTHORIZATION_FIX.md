@@ -65,22 +65,32 @@ Removed `'operation-manager'` from the roles array of all master data menu items
 
 ### Admin Role
 - ✅ Full access to everything (via Gate::before)
+- 29 permissions
 
 ### Manager Role
 - ✅ All master data (Hotels, Trips, Boats, Drivers, Vehicles, Guides, Agencies, Transfer Contracts)
 - ✅ Trip Programs & Families
 - ✅ Customers & Bookings
-- ✅ User Management
+- ✅ View Users
+- ✅ View Reports
+- 16 permissions total
 
 ### Operation Manager Role
 - ❌ **NO** access to master data (Hotels, Trips, Boats, etc.)
+- ❌ **NO** access to Customers & Bookings
 - ✅ **ONLY** Trip Programs & Program Families
-- ✅ Customers & Bookings
 - ✅ View Reports
+- 9 permissions total:
+  - view-trip-programs, create-trip-programs, edit-trip-programs, delete-trip-programs
+  - view-program-families, create-program-families, edit-program-families, delete-program-families
+  - view-reports
 
 ### User Role
-- ✅ Customers & Bookings
-- ✅ View Reports (basic)
+- ❌ **NO** access to master data
+- ❌ **NO** access to Trip Programs
+- ❌ **NO** access to Customers & Bookings
+- ✅ Dashboard only
+- 0 permissions (basic user)
 
 ## Testing
 To verify the fix:

@@ -50,14 +50,12 @@ class RoleSeeder extends Seeder
             ['slug' => 'operation-manager'],
             [
                 'name' => 'Operation Manager',
-                'description' => 'Operations manager with access to trip programs and master data'
+                'description' => 'Operations manager with access to trip programs only'
             ]
         );
 
-        // Operation Manager gets trip program and master data permissions
+        // Operation Manager gets ONLY trip program permissions (NO customers or bookings)
         $operationManagerPermissions = Permission::whereIn('slug', [
-            'view-customers', 'create-customers', 'edit-customers',
-            'view-bookings', 'create-bookings', 'edit-bookings',
             'view-trip-programs', 'create-trip-programs', 'edit-trip-programs', 'delete-trip-programs',
             'view-program-families', 'create-program-families', 'edit-program-families', 'delete-program-families',
             'view-reports',

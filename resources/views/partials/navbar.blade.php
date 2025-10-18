@@ -6,6 +6,7 @@
         <ul class="navbar-nav ms-auto">
             <li class="nav-item dropdown">
                 <a class="nav-link" data-bs-toggle="dropdown" href="#">
+                    <span class="ms-2">{{ Auth::user()->name }}</span>
                     <i class="fa fa-user"></i>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
