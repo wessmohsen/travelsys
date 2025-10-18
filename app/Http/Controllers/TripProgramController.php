@@ -154,9 +154,21 @@ class TripProgramController extends Controller
         $showCustomerColumn = request('showCustomerColumn');
         $showCustomerColumn = in_array($showCustomerColumn, ['true', '1', true], true);
 
+        // Get families with proper ordering
+        $families = ($tripProgram->filtered_families ?? $tripProgram->families()
+            ->with([
+                'hotel',
+                'boat',
+                'guide',
+                'agency',
+                'transferContract.driver'
+            ])
+            ->orderBy('ordering')
+            ->get());
+
         $pdf = Pdf::loadView('trip_programs.pdf', [
             'tripProgram' => $tripProgram,
-            'families' => $tripProgram->filtered_families ?? $tripProgram->families,
+            'families' => $families,
             'showCustomerColumn' => $showCustomerColumn
         ]);
 
@@ -253,7 +265,9 @@ class TripProgramController extends Controller
             'guide',
             'agency',
             'transferContract.driver'
-        ])->where('trip_program_id', $tripProgram->id);
+        ])
+        ->where('trip_program_id', $tripProgram->id)
+        ->orderBy('ordering');
 
         // Debug request parameters
         \Log::info('Filter request parameters:', [
@@ -309,7 +323,10 @@ class TripProgramController extends Controller
             'guide',
             'agency',
             'transferContract'
-        ])->where('trip_program_id', $tripProgram->id)->get();
+        ])
+        ->where('trip_program_id', $tripProgram->id)
+        ->orderBy('ordering')
+        ->get();
 
         // Get unique values for each filter from the current results
         $availableBoats = $programFamilies->pluck('boat.id', 'boat.name')
@@ -544,8 +561,8 @@ class TripProgramController extends Controller
         // Log the successful update
         \Log::info('Trip program updated', ['id' => $tripProgram->id]);
 
-        // Redirect back to the edit page with success message
-        return redirect()->route('trip-programs.edit', $tripProgram->id)
+        // Redirect to the show page with success message
+        return redirect()->route('trip-programs.show', $tripProgram->id)
             ->with('success', 'Trip program updated successfully.');
     }
 

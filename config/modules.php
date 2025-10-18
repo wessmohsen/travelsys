@@ -27,8 +27,14 @@ return [
     ['name' => 'Bookings', 'route' => 'bookings.index', 'icon' => 'fas fa-calendar-check', 'roles' => ['admin', 'manager']],
 
     // Operation Programs - Admin, Manager, and Operation Manager
-    ['name' => 'Operation Programs', 'route' => 'trip-programs.index', 'icon' => 'fa-solid fa-layer-group', 'roles' => ['admin', 'manager', 'operation-manager']],
-
+    [
+        'name' => 'Operation Programs',
+        'icon' => 'fa-solid fa-layer-group',
+        'roles' => ['admin', 'manager', 'operation-manager'],
+        'children' => [
+                ['name' => 'Trip Programs', 'route' => 'trip-programs.index', 'icon' => 'fas fa-shuttle-van'],
+        ]
+    ],
 
     // Reports
     [
