@@ -28,6 +28,10 @@ class TripProgram extends Model
      */
     protected static function booted()
     {
+        static::creating(function ($tripProgram) {
+            $tripProgram->last_modified_at = now();
+        });
+
         static::updating(function ($tripProgram) {
             $tripProgram->last_modified_at = now();
         });
