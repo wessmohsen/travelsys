@@ -1,0 +1,5 @@
+[18-Oct-2025 10:24:06 UTC] PHP Warning:  require(/home/sambodiv/sys.sambodivers.com/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/sambodiv/sys.sambodivers.com/public/index.php on line 14
+[18-Oct-2025 10:24:06 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/sambodiv/sys.sambodivers.com/public/../vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /home/sambodiv/sys.sambodivers.com/public/index.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/sambodiv/sys.sambodivers.com/public/index.php on line 14
