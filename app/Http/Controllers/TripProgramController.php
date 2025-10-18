@@ -19,10 +19,12 @@ class TripProgramController extends Controller
             ->latest('date');
 
         if ($request->filled('from_date')) {
-            $query->whereDate('date', '>=', $request->from_date);
+            $fromDate = \Carbon\Carbon::createFromFormat('d-m-Y', $request->from_date)->startOfDay();
+            $query->whereDate('date', '>=', $fromDate);
         }
         if ($request->filled('to_date')) {
-            $query->whereDate('date', '<=', $request->to_date);
+            $toDate = \Carbon\Carbon::createFromFormat('d-m-Y', $request->to_date)->endOfDay();
+            $query->whereDate('date', '<=', $toDate);
         }
         if ($request->filled('trip_id')) {
             $query->where('trip_id', $request->trip_id);

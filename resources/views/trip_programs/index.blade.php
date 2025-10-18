@@ -12,12 +12,28 @@
         <form method="get" class="d-flex flex-wrap gap-3 align-items-end">
             <div style="flex: 1;">
                 <label class="muted">From Date</label>
-                <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-control" />
+                <input type="text" name="from_date" value="{{ request('from_date') ? date('d-m-Y', strtotime(request('from_date'))) : '' }}" class="form-control date-input" autocomplete="off" />
             </div>
             <div style="flex: 1;">
                 <label class="muted">To Date</label>
-                <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control" />
+                <input type="text" name="to_date" value="{{ request('to_date') ? date('d-m-Y', strtotime(request('to_date'))) : '' }}" class="form-control date-input" autocomplete="off" />
             </div>
+
+            @push('scripts')
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+            <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    flatpickr('.date-input', {
+                        dateFormat: "d-m-Y",
+                        allowInput: true,
+                        altInput: true,
+                        altFormat: "d-m-Y",
+                        defaultHour: 12
+                    });
+                });
+            </script>
+            @endpush
             <div style="flex: 1;">
                 <label class="muted">Trip</label>
                 <select name="trip_id" class="form-control">
@@ -38,6 +54,9 @@
             </div>
             <div>
                 <button class="btn btn-primary">Filter</button>
+            </div>
+            <div>
+                <a href="{{ route('trip-programs.index') }}" class="btn btn-secondary">Clear Filters</a>
             </div>
             @can('create-trip-programs')
             <div>
@@ -64,7 +83,7 @@
             <tbody>
                 @forelse($programs as $p)
                     <tr>
-                        <td>{{ $p->date->format('Y-m-d') }}</td>
+                        <td>{{ $p->date->format('d-m-Y') }}</td>
                         <td>{{ $p->trip->name ?? '-' }}</td>
                         <td>{{ $p->organizer->name ?? '-' }}</td>
                         <td><span class="badge bg-info text-dark">{{ ucfirst($p->status) }}</span></td>
