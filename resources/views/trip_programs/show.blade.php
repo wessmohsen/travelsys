@@ -4,7 +4,22 @@
 @section('breadcrumbs')
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('trip-programs.index') }}">Trip Programs</a></li>
+            <li class="breadcrumb-item"><a h                  <form method="GET" action="{{ route('trip-programs.show', $tripProgram) }}" style="display:inline;" id="pdfExportForm">
+                <input type="hidden" name="export" value="pdf">
+                <input type="hidden" name="showCustomerColumn" id="exportShowCustomerColumn" value="true">
+                <button type="submit" class="btn" style="background:#4CAF50;color:white">
+                    <i class="fas fa-file-pdf"></i> Export PDF
+                </button>
+            </form>
+            <a class="btn" href="{{ route('trip-programs.show', $tripProgram) }}?export=excel" style="background:#2196F3;color:white">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </a><form method="GET" action="{{ route('trip-programs.show', $tripProgram) }}" style="display:inline;" id="pdfExportForm">
+                <input type="hidden" name="export" value="pdf">
+                <input type="hidden" name="showCustomerColumn" id="exportShowCustomerColumn" value="true">
+                <button type="submit" class="btn" style="background:#4CAF50;color:white">
+                    <i class="fas fa-file-pdf"></i> Export to PDF
+                </button>
+            </form>="{{ route('trip-programs.index') }}">Trip Programs</a></li>
             <li class="breadcrumb-item active">Daily Report</li>
         </ol>
     </nav>
@@ -244,7 +259,7 @@
         <h3 style="margin: 0;font-size:1.5rem">Families / Groups</h3>
         <div style="display:flex;align-items:center;gap:12px">
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="checkbox" id="toggleCustomerColumn" checked style="width:16px;height:16px">
+                <input type="checkbox" name="showCustomerColumn" id="toggleCustomerColumn" checked style="width:16px;height:16px">
                 <span style="font-size:0.9rem;color:#444">Show Customer Column</span>
             </label>
         </div>
@@ -357,9 +372,16 @@
             <button type="submit" class="btn btn-primary">Apply Filter</button>
             @if(request()->hasAny(['boat_id', 'hotel_id', 'agency_id', 'transfer_contract_id']))
                 <a href="{{ route('trip-programs.show', $tripProgram) }}" class="btn btn-secondary">Clear Filter</a>
-                <a href="{{ request()->fullUrlWithQuery(['export' => 'pdf']) }}" class="btn btn-success">
-                    <i class="fas fa-file-pdf"></i> Export Filtered PDF
-                </a>
+                <form method="GET" class="d-inline" id="filteredPdfExportForm">
+                    @foreach(request()->except(['export', 'showCustomerColumn']) as $key => $value)
+                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                    @endforeach
+                    <input type="hidden" name="export" value="pdf">
+                    <input type="hidden" name="showCustomerColumn" id="filteredExportShowCustomerColumn" value="true">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-file-pdf"></i> Export Filtered PDF
+                    </button>
+                </form>
                 <a href="{{ request()->fullUrlWithQuery(['export' => 'excel']) }}" class="btn btn-success">
                     <i class="fas fa-file-excel"></i> Export Filtered Excel
                 </a>
@@ -481,13 +503,16 @@
                     @if($fam->transferContract && $fam->transferContract->driver)
                         <div class="transfer-info">
                             <div style="font-weight:500">{{ $fam->transferContract->driver->name }}</div>
-                            @if($fam->transferContract->contract_type === 'company' && $fam->transferContract->company_name)
-                                <div class="text-muted">{{ $fam->transferContract->company_name }}</div>
+                            @if($fam->transferContract->company_name)
+                                <div class="text-muted">Company: {{ $fam->transferContract->company_name }}</div>
                             @endif
                             <div class="text-muted" style="font-size:0.8125rem">
-                                {{ $fam->transferContract->driver->phone }}
+                                Phone: {{ $fam->transferContract->driver->phone }}
                                 @if($fam->transferContract->driver->alternative_phone)
-                                    <br>{{ $fam->transferContract->driver->alternative_phone }}
+                                    <br>Alt Phone: {{ $fam->transferContract->driver->alternative_phone }}
+                                @endif
+                                @if($fam->transferContract->vehicle)
+                                    <br>Vehicle: {{ $fam->transferContract->vehicle->model }} ({{ $fam->transferContract->vehicle->plate_number }})
                                 @endif
                             </div>
                         </div>
@@ -513,6 +538,19 @@
 </div>
 
 <script>
+    function updatePdfExportForms(show) {
+        // Update regular export form
+        const exportShowCustomerColumn = document.getElementById('exportShowCustomerColumn');
+        if (exportShowCustomerColumn) {
+            exportShowCustomerColumn.value = show.toString();
+        }
+        // Update filtered export form
+        const filteredExportShowCustomerColumn = document.getElementById('filteredExportShowCustomerColumn');
+        if (filteredExportShowCustomerColumn) {
+            filteredExportShowCustomerColumn.value = show.toString();
+        }
+    }
+
 document.addEventListener('DOMContentLoaded', function() {
     const checkbox = document.getElementById('toggleCustomerColumn');
 
@@ -520,8 +558,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function toggleColumns(show) {
         const customerColumns = document.querySelectorAll('.customer-column');
         customerColumns.forEach(function(col) {
-            col.style.display = show ? '' : 'none';
+            // Use table-cell for td elements and table-header-cell for th elements
+            if (col.tagName.toLowerCase() === 'td') {
+                col.style.display = show ? 'table-cell' : 'none';
+            } else if (col.tagName.toLowerCase() === 'th') {
+                col.style.display = show ? 'table-cell' : 'none';
+            }
         });
+        updatePdfExportForms(show);
     }
 
     // Load saved preference from localStorage

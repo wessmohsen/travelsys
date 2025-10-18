@@ -150,9 +150,14 @@ class TripProgramController extends Controller
      */
     protected function exportToPdf(TripProgram $tripProgram)
     {
+        // Get the show customer column preference from the request
+        $showCustomerColumn = request('showCustomerColumn');
+        $showCustomerColumn = in_array($showCustomerColumn, ['true', '1', true], true);
+
         $pdf = Pdf::loadView('trip_programs.pdf', [
             'tripProgram' => $tripProgram,
-            'families' => $tripProgram->filtered_families ?? $tripProgram->families
+            'families' => $tripProgram->filtered_families ?? $tripProgram->families,
+            'showCustomerColumn' => $showCustomerColumn
         ]);
 
         // Set landscape orientation and A4 size

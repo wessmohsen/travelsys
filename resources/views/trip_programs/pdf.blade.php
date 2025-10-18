@@ -55,7 +55,9 @@
     <table>
         <thead>
             <tr>
+                @if($showCustomerColumn)
                 <th>Customer/Group</th>
+                @endif
                 <th>A</th>
                 <th>C</th>
                 <th>I</th>
@@ -68,6 +70,7 @@
                 <th>Boat</th>
                 <th>Guide</th>
                 <th>Agency</th>
+                <th>Driver/Vehicle</th>
                 <th>EGP</th>
                 <th>USD</th>
                 <th>EUR</th>
@@ -77,6 +80,7 @@
         <tbody>
             @foreach($families ?? $tripProgram->families as $family)
                 <tr>
+                    @if($showCustomerColumn)
                     <td>
                         @if($family->customer_id)
                             @foreach(\App\Models\Customer::whereIn('id', $family->customer_id)->get() as $customer)
@@ -87,6 +91,7 @@
                             {{ $family->group_name }}
                         @endif
                     </td>
+                    @endif
                     <td>{{ $family->adults ?: '0' }}</td>
                     <td>{{ $family->children ?: '0' }}</td>
                     <td>{{ $family->infants ?: '0' }}</td>
@@ -99,6 +104,25 @@
                     <td>{{ optional($family->boat)->name ?: '-' }}</td>
                     <td>{{ optional($family->guide)->name ?: '-' }}</td>
                     <td>{{ optional($family->agency)->name ?: '-' }}</td>
+                    <td>
+                        @if($family->transferContract && $family->transferContract->driver)
+                            {{ $family->transferContract->driver->name }}
+                            @if($family->transferContract->company_name)
+                                / {{ $family->transferContract->company_name }}
+                            @endif
+                            @if($family->transferContract->driver->phone)
+                                / {{ $family->transferContract->driver->phone }}
+                            @endif
+                            @if($family->transferContract->driver->alternative_phone)
+                                / {{ $family->transferContract->driver->alternative_phone }}
+                            @endif
+                            @if($family->transferContract->vehicle)
+                                / {{ $family->transferContract->vehicle->model }} ({{ $family->transferContract->vehicle->plate_number }})
+                            @endif
+                        @else
+                            -
+                        @endif
+                    </td>
                     <td class="currency-value">{{ $family->collect_egp ? number_format($family->collect_egp, 2) : '0.00' }}</td>
                     <td class="currency-value">{{ $family->collect_usd ? number_format($family->collect_usd, 2) : '0.00' }}</td>
                     <td class="currency-value">{{ $family->collect_eur ? number_format($family->collect_eur, 2) : '0.00' }}</td>
@@ -108,10 +132,10 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="13" style="text-align: right;"><strong>Totals:</strong></td>
-                <td class="currency-value"><strong>{{ number_format($tripProgram->families->sum('collect_egp'), 2) }}</strong></td>
-                <td class="currency-value"><strong>{{ number_format($tripProgram->families->sum('collect_usd'), 2) }}</strong></td>
-                <td class="currency-value"><strong>{{ number_format($tripProgram->families->sum('collect_eur'), 2) }}</strong></td>
+                <td colspan="{{ $showCustomerColumn ? 14 : 13 }}" style="text-align: right;"><strong>Totals:</strong></td>
+                <td class="currency-value"><strong>{{ number_format($families->sum('collect_egp'), 2) }}</strong></td>
+                <td class="currency-value"><strong>{{ number_format($families->sum('collect_usd'), 2) }}</strong></td>
+                <td class="currency-value"><strong>{{ number_format($families->sum('collect_eur'), 2) }}</strong></td>
                 <td></td>
             </tr>
         </tfoot>
