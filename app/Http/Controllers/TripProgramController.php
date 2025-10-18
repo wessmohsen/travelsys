@@ -60,7 +60,7 @@ class TripProgramController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $this->validateProgram($request);
+        $validated = $this->validateProgram($request, false);
 
         // Debug: Log the customers data
         \Log::info('=== STORE DEBUG ===');
@@ -196,7 +196,7 @@ class TripProgramController extends Controller
         \Log::info('Update request received', ['data' => $request->all()]);
 
         // Validate the request
-        $validated = $this->validateProgram($request);
+        $validated = $this->validateProgram($request, true);
 
         // Log the validated data for debugging
         \Log::info('Validated data', ['data' => $validated]);
@@ -350,11 +350,16 @@ class TripProgramController extends Controller
     /**
      * Central validation (includes rule: either customer_id OR group_name must be provided per family)
      */
-    protected function validateProgram(Request $request): array
+    protected function validateProgram(Request $request, bool $isUpdate = false): array
     {
+        $dateRules = ['required', 'date'];
+        if (!$isUpdate) {
+            $dateRules[] = 'after_or_equal:' . now()->format('Y-m-d');
+        }
+
         return $request->validate([
             'trip_id' => 'required|exists:trips,id',
-            'date' => 'required|date',
+            'date' => $dateRules,
             'organizer_id' => 'required|exists:users,id',
             'status' => 'nullable|in:draft,confirmed,done',
             'remarks' => 'nullable|string',

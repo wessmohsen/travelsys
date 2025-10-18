@@ -15,8 +15,12 @@
         </div>
         <div>
             <label class="muted">Date</label>
-            <input type="date" name="date" value="{{ old('date', optional($program->date ?? null)->format('Y-m-d')) }}"
+            <input type="date" name="date" class="date-picker @error('date') is-invalid @enderror"
+                value="{{ old('date', optional($program->date ?? null)->format('Y-m-d')) }}"
                 required>
+            @error('date')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
         <div>
             <label class="muted">Status</label>
@@ -126,7 +130,9 @@
 </div>
 
 @push('scripts')
-    <!-- SortableJS for drag-and-drop -->
+    <!-- Date picker and SortableJS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         /* Enhanced ordering column styles */
@@ -160,6 +166,14 @@
             }
 
             jQuery(function () {
+                // Initialize date picker with minimum date restriction only for new programs
+                flatpickr('.date-picker', {
+                    minDate: @if(!isset($program)) new Date().fp_incr(0) @else null @endif,
+                    dateFormat: 'Y-m-d',
+                    disableMobile: true,
+                    allowInput: true
+                });
+
                 var rowIndex = jQuery('#families-table tbody tr').length;
 
                 // Initialize SortableJS for drag-and-drop
