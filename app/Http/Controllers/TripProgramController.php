@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\{TripProgram, ProgramFamily, Trip, Customer, Hotel, User, Boat, Agency, Guide, TransferContract};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TripProgramController extends Controller
 {
@@ -145,27 +146,212 @@ class TripProgramController extends Controller
     }
 
     /**
+     * Export trip program to PDF
+     */
+    protected function exportToPdf(TripProgram $tripProgram)
+    {
+        $pdf = Pdf::loadView('trip_programs.pdf', [
+            'tripProgram' => $tripProgram,
+            'families' => $tripProgram->filtered_families ?? $tripProgram->families
+        ]);
+
+        // Set landscape orientation and A4 size
+        $pdf->setPaper('a4', 'landscape');
+
+        return $pdf->download('daily_report.pdf');
+    }    /**
+     * Export trip program to Excel
+     */
+    protected function exportToExcel(TripProgram $tripProgram)
+    {
+        $filename = 'daily_report.csv';
+        $handle = fopen('php://temp', 'w+');
+
+        // Add headers
+        fputcsv($handle, [
+            'Customer/Group',
+            'A', 'C', 'I',
+            'Hotel',
+            'Room',
+            'Pickup',
+            'Activity',
+            'Size',
+            'Nationality',
+            'Boat Master',
+            'Guide Name',
+            'Agency',
+            'EGP',
+            'USD',
+            'EUR',
+            'Remarks'
+        ]);
+
+        // Add data rows
+        foreach ($tripProgram->filtered_families ?? $tripProgram->families as $family) {
+            $customerNames = [];
+            if (!empty($family->customer_id)) {
+                $customers = \App\Models\Customer::whereIn('id', $family->customer_id)->get();
+                foreach ($customers as $customer) {
+                    $customerNames[] = $customer->name;
+                }
+            }
+            if (!empty($family->group_name)) {
+                $customerNames[] = $family->group_name;
+            }
+
+            fputcsv($handle, [
+                implode(', ', $customerNames),
+                $family->adults ?: '0',
+                $family->children ?: '0',
+                $family->infants ?: '0',
+                $family->hotel ? $family->hotel->name : '-',
+                $family->room_number ?: '-',
+                $family->pickup_time ?: '-',
+                $family->activity ?: '-',
+                $family->size ?: '-',
+                $family->nationality ?: '-',
+                optional($family->boat)->name ?: '-',
+                $family->guide ? $family->guide->name : '-',
+                $family->agency ? $family->agency->name : '-',
+                $family->collect_egp ?: '0',
+                $family->collect_usd ?: '0',
+                $family->collect_eur ?: '0',
+                $family->remarks ?: '-'
+            ]);
+        }
+
+        // Reset file pointer and read content
+        rewind($handle);
+        $content = stream_get_contents($handle);
+        fclose($handle);
+
+        return response($content)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+    }
+
+    /**
      * show() → full daily report (Excel-like layout) + optional export
      */
     public function show(TripProgram $tripProgram, Request $request)
     {
-        $tripProgram->load([
-            'trip',
-            'families.hotel',
-            'families.boat',
-            'families.transferContract.driver'
+        // Debug the incoming request
+        \Log::info('Show method called with:', [
+            'trip_program_id' => $tripProgram->id,
+            'request_parameters' => $request->all()
         ]);
 
-        // Simple export toggles (placeholder)
-        if ($request->get('export') === 'pdf') {
-            // TODO: integrate your PDF generator (e.g., barryvdh/laravel-dompdf)
-            // return PDF::loadView('trip_programs.show', [...])->download('daily-report.pdf');
-        }
-        if ($request->get('export') === 'excel') {
-            // TODO: integrate Laravel-Excel export
+        // Start with base query including relationships
+        $query = ProgramFamily::with([
+            'hotel',
+            'boat',
+            'guide',
+            'agency',
+            'transferContract.driver'
+        ])->where('trip_program_id', $tripProgram->id);
+
+        // Debug request parameters
+        \Log::info('Filter request parameters:', [
+            'trip_program_id' => $tripProgram->id,
+            'all_parameters' => $request->all()
+        ]);
+
+        // Apply filters and track them
+        $appliedFilters = [];
+
+        // Handle boat filter
+        if ($request->filled('boat_id')) {
+            $boatId = $request->boat_id;
+            $query->where('boat_id', $boatId);
+            $appliedFilters['boat_id'] = $boatId;
         }
 
-        return view('trip_programs.show', compact('tripProgram'));
+        // Handle hotel filter
+        if ($request->filled('hotel_id')) {
+            $hotelId = $request->hotel_id;
+            $query->where('hotel_id', $hotelId);
+            $appliedFilters['hotel_id'] = $hotelId;
+        }
+
+        // Handle agency filter
+        if ($request->filled('agency_id')) {
+            $agencyId = $request->agency_id;
+            $query->where('agency_id', $agencyId);
+            $appliedFilters['agency_id'] = $agencyId;
+        }
+
+        // Handle transfer contract filter
+        if ($request->filled('transfer_contract_id')) {
+            $contractId = $request->transfer_contract_id;
+            $query->where('transfer_contract_id', $contractId);
+            $appliedFilters['transfer_contract_id'] = $contractId;
+        }
+
+        // Debug query before execution
+        \Log::info('Query before execution:', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+            'applied_filters' => $appliedFilters
+        ]);
+
+        // Execute query and get results
+        $programFamilies = $query->get();
+
+        // Log final results for debugging
+        \Log::info('Final query results:', [
+            'total_found' => $programFamilies->count(),
+            'has_relationships' => $programFamilies->first() ? [
+                'hotel' => $programFamilies->first()->relationLoaded('hotel'),
+                'boat' => $programFamilies->first()->relationLoaded('boat'),
+                'guide' => $programFamilies->first()->relationLoaded('guide'),
+                'agency' => $programFamilies->first()->relationLoaded('agency'),
+                'transfer_contract' => $programFamilies->first()->relationLoaded('transferContract')
+            ] : [],
+            'applied_filters' => $appliedFilters,
+            'sample_data' => $programFamilies->take(1)->map(function($family) {
+                return [
+                    'boat_id' => $family->boat_id,
+                    'hotel_id' => $family->hotel_id,
+                    'agency_id' => $family->agency_id,
+                    'transfer_contract_id' => $family->transfer_contract_id
+                ];
+            })
+        ]);
+
+        \Log::info('Final results:', [
+            'total_results' => $programFamilies->count(),
+            'boat_ids_in_results' => $programFamilies->pluck('boat_id')->toArray(),
+            'hotel_ids_in_results' => $programFamilies->pluck('hotel_id')->toArray()
+        ]);
+
+        // Also load the trip relation for the trip program
+        $tripProgram->load(['trip']);
+
+        // Get filter options for the view
+        $boats = Boat::orderBy('name')->get(['id', 'name']);
+        $hotels = Hotel::orderBy('name')->get(['id', 'name']);
+        $agencies = Agency::orderBy('name')->get(['id', 'name']);
+        $transferContracts = TransferContract::orderBy('company_name')->get(['id', 'company_name']);
+
+        // Handle export functionality
+        if ($request->get('export') === 'pdf') {
+            $tripProgram->filtered_families = $programFamilies;
+            return $this->exportToPdf($tripProgram);
+        }
+
+        if ($request->get('export') === 'excel') {
+            $tripProgram->filtered_families = $programFamilies;
+            return $this->exportToExcel($tripProgram);
+        }
+
+        return view('trip_programs.show', compact(
+            'tripProgram',
+            'programFamilies',
+            'boats',
+            'hotels',
+            'agencies',
+            'transferContracts'
+        ));
     }
 
     /**

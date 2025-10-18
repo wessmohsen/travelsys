@@ -1,8 +1,47 @@
 @extends('layouts.app')
 @section('title','Daily Report')
 
+@section('breadcrumbs')
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('trip-programs.index') }}">Trip Programs</a></li>
+            <li class="breadcrumb-item active">Daily Report</li>
+        </ol>
+    </nav>
+@endsection
+
 @push('styles')
 <style>
+    @if(isset($forPrint) && $forPrint)
+    /* Print-specific styles */
+    * {
+        font-family: Arial, 'DejaVu Sans', sans-serif;
+    }
+    body {
+        font-size: 12px;
+        line-height: 1.3;
+        margin: 0;
+        padding: 10px;
+    }
+    .btn, .container-fluid > .card:first-child {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    table {
+        width: 100% !important;
+        font-size: 10px !important;
+        border-collapse: collapse !important;
+    }
+    table th, table td {
+        border: 1px solid #ddd !important;
+        padding: 4px !important;
+    }
+    @endif
+
     .info-group {
         background: #f8f9fa;
         padding: 12px;
@@ -157,8 +196,136 @@
         </div>
     </div>
 
+    <form action="{{ route('trip-programs.show', $tripProgram) }}" method="GET" class="mb-4" id="filterForm">
+        @csrf
+        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="boat_id">Filter by Boat</label>
+                    <select name="boat_id" id="boat_id" class="form-control filter-select">
+                        <option value="">All Boats</option>
+                        @foreach($boats as $boat)
+                            @php
+                                $isSelected = (string)request('boat_id') === (string)$boat->id;
+                                \Log::info('Boat Option:', [
+                                    'boat_id' => $boat->id,
+                                    'boat_name' => $boat->name,
+                                    'requested_id' => request('boat_id'),
+                                    'is_selected' => $isSelected
+                                ]);
+                            @endphp
+                            <option value="{{ $boat->id }}" {{ $isSelected ? 'selected' : '' }}>
+                                {{ $boat->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="hotel_id">Filter by Hotel</label>
+                    <select name="hotel_id" id="hotel_id" class="form-control filter-select">
+                        <option value="">All Hotels</option>
+                        @foreach($hotels as $hotel)
+                            <option value="{{ $hotel->id }}" {{ request('hotel_id') == $hotel->id ? 'selected' : '' }}>
+                                {{ $hotel->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="agency_id">Filter by Agency</label>
+                    <select name="agency_id" id="agency_id" class="form-control filter-select">
+                        <option value="">All Agencies</option>
+                        @foreach($agencies as $agency)
+                            @php
+                                $isSelected = request('agency_id') == $agency->id;
+                                \Log::info('Agency Option:', [
+                                    'agency_id' => $agency->id,
+                                    'agency_name' => $agency->name,
+                                    'requested_id' => request('agency_id'),
+                                    'is_selected' => $isSelected
+                                ]);
+                            @endphp
+                            <option value="{{ $agency->id }}" {{ $isSelected ? 'selected' : '' }}>
+                                {{ $agency->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="transfer_contract_id">Filter by Transfer Contract</label>
+                    <select name="transfer_contract_id" id="transfer_contract_id" class="form-control filter-select">
+                        <option value="">All Transfer Contracts</option>
+                        @foreach($transferContracts as $contract)
+                            <option value="{{ $contract->id }}" {{ request('transfer_contract_id') == $contract->id ? 'selected' : '' }}>
+                                {{ $contract->company_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Apply Filter</button>
+            @if(request()->hasAny(['boat_id', 'hotel_id', 'agency_id', 'transfer_contract_id']))
+                <a href="{{ route('trip-programs.show', $tripProgram) }}" class="btn btn-secondary">Clear Filter</a>
+                <a href="{{ request()->fullUrlWithQuery(['export' => 'pdf']) }}" class="btn btn-success">
+                    <i class="fas fa-file-pdf"></i> Export Filtered PDF
+                </a>
+                <a href="{{ request()->fullUrlWithQuery(['export' => 'excel']) }}" class="btn btn-success">
+                    <i class="fas fa-file-excel"></i> Export Filtered Excel
+                </a>
+            @endif
+        </div>
+    </form>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterSelects = document.querySelectorAll('.filter-select');
+        const filterForm = document.getElementById('filterForm');
+
+        // Log current filter values for debugging
+        console.log('Current filter values:', {
+            boat_id: document.querySelector('#boat_id').value,
+            hotel_id: document.querySelector('#hotel_id').value,
+            agency_id: document.querySelector('#agency_id').value,
+            transfer_contract_id: document.querySelector('#transfer_contract_id').value
+        });
+
+        filterSelects.forEach(select => {
+            select.addEventListener('change', function() {
+                console.log('Filter changed:', this.name, 'to value:', this.value);
+
+                // Get current URL parameters
+                const currentUrl = new URL(window.location.href);
+
+                // Update or remove the changed parameter
+                if (this.value) {
+                    currentUrl.searchParams.set(this.name, this.value);
+                } else {
+                    currentUrl.searchParams.delete(this.name);
+                }
+
+                console.log('Submitting form with values:', Object.fromEntries(currentUrl.searchParams));
+
+                // Navigate to the new URL
+                window.location.href = currentUrl.toString();
+            });
+        });
+    });
+    </script>
+
     <div class="table-responsive" style="overflow-x:auto">
-        <table style="border-collapse:separate;border-spacing:0;width:100%;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
+        @if(isset($filteredFamilies) && $filteredFamilies->isEmpty())
+            <div class="alert alert-info">No records found matching the selected filters.</div>
+        @else
+            <table style="border-collapse:separate;border-spacing:0;width:100%;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
             <thead>
                 <tr style="background:#f8f9fa">
                     <th class="customer-column" style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600">Customer / Group</th>
@@ -182,7 +349,7 @@
             </tr>
         </thead>
         <tbody>
-        @foreach($tripProgram->families as $idx => $fam)
+        @foreach($programFamilies as $idx => $fam)
             <tr>
                 <td class="customer-column">
                     @php
@@ -258,7 +425,9 @@
             </tr>
         @endforeach
         </tbody>
-    </table>
+            </table>
+        @endif
+    </div>
 </div>
 
 <script>
@@ -287,5 +456,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
 @endsection
+
