@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
         $this->call(TripSeeder::class);
         Booking::factory(20)->create();
         $this->call(HotelSeeder::class);
-        Boat::factory(3)->create();
+        $this->call(BoatSeeder::class);
         $this->call(DriverSeeder::class);
         Vehicle::factory(5)->create();
         DivingCourse::factory(5)->create();
