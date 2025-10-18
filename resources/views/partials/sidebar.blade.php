@@ -1,7 +1,11 @@
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
-  <a href="{{ route('dashboard') }}" class="brand-link text-center">
-    <span class="brand-text font-weight-bold">Sambo System</span>
-  </a>
+    <div>
+        <img src="https://sambodivers.com/wp-content/uploads/2025/10/for-dark-bg.png" alt="Sambo System Logo" class="my-3" style="max-width: 150px; display: block; margin-left: auto; margin-right: auto;">
+        <div align="center"><a href="{{ route('dashboard') }}" class="brand-link text-center" style="text-decoration: none;font-size: 1.2rem;font-weight: bold;">
+            <span class="brand-text font-weight-bold" style="color: #fff;">Sambo System</span>
+        </a></div>
+    </div>
+
 
   <div class="sidebar-wrapper">
     <nav class="mt-2">

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login | Travel Admin</title>
+  <title>Login | Sambo Operation System</title>
 
   <!-- AdminLTE v4 CSS -->
   <link rel="stylesheet" href="{{ asset('dist/css/adminlte.css') }}">
@@ -15,8 +15,10 @@
 <div class="login-box">
   <!-- Card -->
   <div class="card card-outline card-primary">
+            <img src="https://sambodivers.com/wp-content/uploads/2022/04/sambo-logo.png" alt="Sambo System Logo" class="mb-2" style="max-width: 150px; display: block; margin: 10px auto 0 auto;">
+
     <div class="card-header text-center">
-      <a href="/" class="h1"><b>Travel</b>Admin</a>
+      <a href="/" class="h1"><b>Sambo</b>System</a>
     </div>
     <div class="card-body">
       <p class="login-box-msg">Sign in to start your session</p>
