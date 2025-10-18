@@ -33,6 +33,7 @@ return [
         'roles' => ['admin', 'manager', 'operation-manager'],
         'children' => [
                 ['name' => 'Trip Programs', 'route' => 'trip-programs.index', 'icon' => 'fas fa-shuttle-van'],
+                ['name' => 'Daily Programs', 'route' => 'trip-programs.daily', 'icon' => 'fas fa-calendar-day'],
         ]
     ],
 

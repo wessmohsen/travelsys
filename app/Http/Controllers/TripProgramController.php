@@ -10,8 +10,36 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class TripProgramController extends Controller
 {
     /**
-     * index() → list programs with filters (by date, trip)
+     * Display daily programs
      */
+    public function daily(Request $request)
+    {
+        $date = $request->filled('date')
+            ? \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)
+            : now();
+
+        // Get all dates that have programs
+        $programDates = TripProgram::select('date')
+            ->distinct()
+            ->orderBy('date')
+            ->pluck('date')
+            ->map(function($date) {
+                return $date->format('d-m-Y');
+            })
+            ->toArray();
+
+        $programs = TripProgram::with(['trip', 'families' => function($query) {
+                $query->orderBy('ordering')->orderBy('id');
+            }, 'families.hotel', 'families.guide', 'families.agency', 'families.transferContract.driver', 'families.boat', 'organizer'])
+            ->whereDate('date', $date)
+            ->orderBy('trip_id')
+            ->get();
+
+        $groupedPrograms = $programs->groupBy('trip_id');
+
+        return view('trip_programs.daily', compact('groupedPrograms', 'date', 'programDates'));
+    }
+
     public function index(Request $request)
     {
         $query = TripProgram::query()
@@ -42,8 +70,26 @@ class TripProgramController extends Controller
     }
 
     /**
-     * create() → form page
+     * Export daily programs to PDF
      */
+    public function exportDaily(Request $request)
+    {
+        $date = $request->filled('date')
+            ? \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)
+            : now();
+
+        $programs = TripProgram::with(['trip', 'families', 'organizer'])
+            ->whereDate('date', $date)
+            ->orderBy('trip_id')
+            ->get();
+
+        $groupedPrograms = $programs->groupBy('trip_id');
+
+        $pdf = PDF::loadView('trip_programs.daily-pdf', compact('groupedPrograms', 'date'));
+
+        return $pdf->download('daily-programs-' . $date->format('Y-m-d') . '.pdf');
+    }
+
     public function create()
     {
         return view('trip_programs.create', [

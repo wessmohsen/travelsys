@@ -48,6 +48,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Reports - accessible by Admin, Manager, and Operation Manager
     Route::middleware(['role:admin,manager,operation-manager'])->group(function () {
+        Route::get('/daily-programs', [TripProgramController::class, 'daily'])->name('trip-programs.daily');
+        Route::get('/daily-programs/export', [TripProgramController::class, 'exportDaily'])->name('trip-programs.daily.export');
         Route::get('/reports/bookings', [BookingReportController::class, 'index'])->name('reports.bookings');
         Route::get('/reports/customers', [BookingReportController::class, 'customers'])->name('reports.customers');
     });
