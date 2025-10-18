@@ -78,14 +78,23 @@ class TripProgramController extends Controller
             ? \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)
             : now();
 
-        $programs = TripProgram::with(['trip', 'families', 'organizer'])
+        $programs = TripProgram::with([
+            'trip',
+            'families.agency',
+            'families.hotel',
+            'families.boat',
+            'families.guide',
+            'families.transferContract.driver',
+            'organizer'
+        ])
             ->whereDate('date', $date)
             ->orderBy('trip_id')
             ->get();
 
         $groupedPrograms = $programs->groupBy('trip_id');
 
-        $pdf = PDF::loadView('trip_programs.daily-pdf', compact('groupedPrograms', 'date'));
+        $pdf = PDF::loadView('trip_programs.daily-pdf', compact('groupedPrograms', 'date'))
+            ->setPaper('a4', 'landscape');
 
         return $pdf->download('daily-programs-' . $date->format('Y-m-d') . '.pdf');
     }

@@ -432,6 +432,7 @@
             <table style="border-collapse:separate;border-spacing:0;width:100%;background:white;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
             <thead>
                 <tr style="background:#f8f9fa">
+                    <th style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600">Agency</th>
                     <th class="customer-column" style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600">Customer / Group</th>
                     <th style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600">A</th>
                     <th style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600">C</th>
@@ -444,7 +445,6 @@
                     <th style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600">Nationality</th>
                     <th style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600">Boat Master</th>
                     <th style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600">Guide Name</th>
-                    <th style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600">Agency</th>
                     <th style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600">Transfer Contract</th>
                     <th style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600;text-align:right;padding-right:16px">EGP</th>
                     <th style="padding:12px;border-bottom:2px solid #dee2e6;font-weight:600;text-align:right;padding-right:16px">USD</th>
@@ -455,6 +455,13 @@
         <tbody>
         @foreach($programFamilies as $idx => $fam)
             <tr>
+                <td>
+                    @if($fam->agency)
+                        <span title="{{ $fam->agency->name }}">{{ $fam->agency->name }}</span>
+                    @else
+                        -
+                    @endif
+                </td>
                 <td class="customer-column">
                     @php
                         $displayNames = [];
@@ -492,37 +499,23 @@
                 <td>{{ $fam->nationality ?: '-' }}</td>
                 <td>{{ optional($fam->boat)->name ?? '-' }}</td>
                 <td>{{ $fam->guide->name ?? '-' }}</td>
-                <td>
-                    @if($fam->agency)
-                        <span title="{{ $fam->agency->name }}">{{ $fam->agency->name }}</span>
-                    @else
-                        -
-                    @endif
                 </td>
                 <td>
-                    @if($fam->transferContract && $fam->transferContract->driver)
-                        <div class="transfer-info">
-                            <div style="font-weight:500">{{ $fam->transferContract->driver->name }}</div>
-                            @if($fam->transferContract->company_name)
-                                <div class="text-muted">Company: {{ $fam->transferContract->company_name }}</div>
-                            @endif
-                            <div class="text-muted" style="font-size:0.8125rem">
-                                Phone: {{ $fam->transferContract->driver->phone }}
-                                @if($fam->transferContract->driver->alternative_phone)
-                                    <br>Alt Phone: {{ $fam->transferContract->driver->alternative_phone }}
-                                @endif
-                                @if($fam->transferContract->vehicle)
-                                    <br>Vehicle: {{ $fam->transferContract->vehicle->model }} ({{ $fam->transferContract->vehicle->plate_number }})
-                                @endif
-                            </div>
-                        </div>
-                    @elseif($fam->transferContract)
-                        <div class="transfer-info">
-                            <div style="font-weight:500">{{ $fam->transferContract->company_name ?? 'No Driver' }}</div>
-                            <div class="text-muted" style="font-size:0.8125rem">{{ $fam->transferContract->from }} → {{ $fam->transferContract->to }}</div>
-                        </div>
+                    @if($fam->transferContract)
+                        @php
+                            $phones = [];
+                            if($fam->transferContract->phone) {
+                                $phones[] = $fam->transferContract->phone;
+                            }
+                            if($fam->transferContract->alt_phone) {
+                                $phones[] = $fam->transferContract->alt_phone;
+                            }
+                        @endphp
+                        {{ $fam->transferContract->driver->name ?? 'No Driver' }} |
+                        {{ $fam->transferContract->company_name }} |
+                        {{ implode(' | ', $phones) }}
                     @else
-                        -
+                        -- Select Contract --
                     @endif
                 </td>
                 <td class="currency-value">{{ $fam->collect_egp !== null ? number_format($fam->collect_egp, 2) : '-' }}</td>

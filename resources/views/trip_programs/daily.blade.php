@@ -83,6 +83,7 @@
                                         <table class="table table-sm table-hover align-middle w-100">
                                             <thead class="table-light">
                                                 <tr>
+                                                    <th>Company</th>
                                                     <th class="text-center" style="width: 40px;">A</th>
                                                     <th class="text-center" style="width: 40px;">C</th>
                                                     <th class="text-center" style="width: 40px;">I</th>
@@ -94,7 +95,6 @@
                                                     <th>Nationality</th>
                                                     <th>Boat Master</th>
                                                     <th>Guide Name</th>
-                                                    <th>Agency</th>
                                                     <th>Transfer Contract</th>
                                                     <th class="text-end" style="width: 100px;">EGP</th>
                                                     <th class="text-end" style="width: 100px;">USD</th>
@@ -105,6 +105,7 @@
                                             <tbody>
                                                 @forelse($program->families as $family)
                                                     <tr>
+                                                        <td>{{ $family->agency->name ?? '-' }}</td>
                                                         <td class="text-center">{{ $family->adults }}</td>
                                                         <td class="text-center">{{ $family->children }}</td>
                                                         <td class="text-center">{{ $family->infants }}</td>
@@ -122,23 +123,22 @@
                                                             @endif
                                                         </td>
                                                         <td>{{ $family->guide->name ?? '-' }}</td>
-                                                        <td>{{ $family->agency->name ?? '-' }}</td>
                                                         <td>
                                                             @if($family->transferContract)
-                                                                <div>{{ $family->transferContract->company_name }}</div>
-                                                                <div class="small text-muted">
-                                                                    @if($family->transferContract->phone)
-                                                                        <div>{{ $family->transferContract->phone }}</div>
-                                                                    @endif
-                                                                    @if($family->transferContract->alt_phone)
-                                                                        <div>{{ $family->transferContract->alt_phone }}</div>
-                                                                    @endif
-                                                                    @if($family->transferContract->driver)
-                                                                        <div>Vehicle: {{ $family->transferContract->driver->vehicle_number ?? 'N/A' }}</div>
-                                                                    @endif
-                                                                </div>
+                                                                @php
+                                                                    $phones = [];
+                                                                    if($family->transferContract->phone) {
+                                                                        $phones[] = $family->transferContract->phone;
+                                                                    }
+                                                                    if($family->transferContract->alt_phone) {
+                                                                        $phones[] = $family->transferContract->alt_phone;
+                                                                    }
+                                                                @endphp
+                                                                {{ $family->transferContract->driver->name ?? 'No Driver' }} |
+                                                                {{ $family->transferContract->company_name }} |
+                                                                {{ implode(' | ', $phones) }}
                                                             @else
-                                                                -
+                                                                -- Select Contract --
                                                             @endif
                                                         </td>
                                                         <td class="text-end">{{ number_format($family->collect_egp ?? 0, 2) }}</td>
